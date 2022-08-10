@@ -216,11 +216,12 @@ memorizzando per quali servizi un dato volontario e' disponibile (e in quali gio
   - la data di scadenza deve essere maggiore della data di autorizzazione
   - i punti mensili devono essere compresi tra 30 e 60
   - il saldo punti non puo' essere minore di 0
-  - data di nascita deve essere una data passata (non nel futuro)
+  - il cliente deve essere maggiorenne
   - numero componenti familiari deve essere maggiore di 0
 
 - `Appuntamenti`
   - 'ID e' univoco'
+  - data e ora sono univoche insieme
   - 'saldo_iniziale' deve essere maggiore di 0
   - 'saldo_finale' deve essere minore di 'saldo_iniziale'
 
@@ -232,10 +233,10 @@ memorizzando per quali servizi un dato volontario e' disponibile (e in quali gio
   - 'codice_prodotto' e' univoco
   - quantita' deve essere maggiore o uguale di 0
   - 'prezzo' deve essere maggiore di 0
+  - tiplogia e marca devono essere univoci insieme
 
 - `Volontari`
   - 'ID' e' univoco
-  - 'data_nascita' deve essere maggiore di 18 anni nel passato
   - telefono deve essere univoco
   - email deve essere univoca
 
@@ -247,6 +248,7 @@ memorizzando per quali servizi un dato volontario e' disponibile (e in quali gio
 
 - `Servizi`
   - 'ID' e' univoco
+  - 'nome' e' univoco
 
 - `Servizi -> trasporti`
   
@@ -266,6 +268,7 @@ memorizzando per quali servizi un dato volontario e' disponibile (e in quali gio
   - 'importo' deve essere maggiore di 0
 
 - `Donazioni -> prodotti`
+  - se il consegnatario e' un privato non puo' essere un volontario e viceversa
 
 - `Donatori`
   - 'ID' e' univoco
