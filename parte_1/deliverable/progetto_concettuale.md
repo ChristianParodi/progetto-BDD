@@ -300,12 +300,16 @@ memorizzando per quali servizi un dato volontario e' disponibile (e in quali gio
 #### `eliminazione delle gerarchie`
 
 - `Servizi`
+  
   Abbiamo pensato fosse sensato immagazzinare i dati del figlio nel padre (come attributi opzionali), siccome l'ID del padre e' la chiave anche del figlio, nel caso si fosse deciso di tenere 2 tabelle separate, si sarebbe dovuto fare un join per accedere ai dati del veicolo.
 - `Turni`
+  
   Siccome sia padre che figlio sono associate ad altre tabelle, e' stato necessario "mantenere" le differenze e quindi abbiamo eliminato la gerarchia in favore di 2 tabelle associate
 - `Donazioni`
+  
   In questo caso abbiamo optato per una soluzione ibrida, ovvero eliminare il figlio nel caso di `Donazioni -> denaro` (siccome non e' associata a niente) e mantenere 2 tabelle associate per `Donazioni -> prodotti` (visto che e' associata a diverse tabelle).
 - `Donatori`
+  
   In questo caso per tutti e 3 i figli abbiamo associato una tabella aggiuntiva perche', anche se alcune non sono associate con niente, ci sembra piu' comodo avere memorizzati dati cosi' diversi in tabelle diverse.
 
 #### `schema logico`
@@ -421,6 +425,8 @@ Per verificare la qualita' dello schema ER ristrutturato e' bene controllare che
 
 Si puo' notare che tutte le dipendenze "sinistre" contengono una chiave, di conseguenza lo schema e' normalizzato rispetto a Boyce Codd
 
+\underline{NOTA}: "$ID \to ...$" indica che l'ID implica tutti gli altri attributi della relazione (essendo chiave)
+
 #### `carico di lavoro`
 
 Per effettuare tutte le operazioni al meglio, e' necessario stimare un carico di lavoro (quali operazioni verranno fatte piu' spesso, il volume dei dati nel tempo...).
@@ -429,7 +435,7 @@ Essendo un social market, ci si aspetta che abbia (sfortunatamente) abbastanza c
 
 Sapendo all'incirca quanti clienti si hanno, ci si potra' piu' o meno orientare per capire di quanti prodotti il market avra' bisogno, sicuramente piu' dei clienti. Quindi si suppone che, per quantita', i prodotti saranno quelli con il maggior volume tra tutti gli altri dati, seguiti dai clienti (e i loro familiari).
 
-Si suppone che le operazioni svolte maggiormente saranno lo stoccaggio dei prodotti in inventario (quindi inserimenti di prodotti e modifiche delle quantita' nelle scorte), quindi bisogna cercare di non sprecare memoria (per esempio con colonne a `null`) e bisogna ottimizzare le operazioni in particolare su questi dati. Ovviamente anche le altre operazioni (es. creazione turni) verranno fatte regolarmente, pero' non avranno mai milioni di righe come per i clienti o i prodotti in inventario.
+Si suppone che le operazioni svolte maggiormente saranno lo stoccaggio dei prodotti in inventario (quindi inserimenti ed eliminazioni di tuple in prodotti, modifiche delle quantita' nelle scorte...), quindi bisogna cercare di non sprecare memoria (per esempio con colonne "inutilmente" a `null`) e bisogna ottimizzare le operazioni in particolare su questi dati. Ovviamente anche le altre operazioni (es. creazione turni) verranno fatte regolarmente, pero' non avranno mai milioni di righe come per i clienti o i prodotti in inventario, e in ogni caso saranno svolte meno rispetto a quelle sui prodotti.
 
 #### `scelte d'implementazione`
 
