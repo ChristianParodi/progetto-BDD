@@ -313,7 +313,7 @@ memorizzando per quali servizi un dato volontario e' disponibile (e in quali gio
 **Familiari**(\underline{CF}, nome, cognome, data_nascita, autorizzato,
 componente_nucleo, cliente$^{clienti}$)
 
-**Clienti**(\underline{ID}, nome, cognome, data*nascita, ente_autorizzatore, data_autorizzazione, scadenza_autorizzazione, punti_mensili, saldo_punti, *CF*, n_componenti_nucleo, autorizzato)
+**Clienti**(\underline{ID}, nome, cognome, data_nascita, ente_autorizzatore, data_autorizzazione, scadenza_autorizzazione, punti_mensili, saldo_punti, *CF*, n_componenti_nucleo, autorizzato)
 
 **Telefoni**(\underline{numero}, cliente$^{clienti}$)
 
@@ -345,13 +345,13 @@ componente_nucleo, cliente$^{clienti}$)
 
 **Donazioni_prodotti**(\underline{donazione$^{donazioni}$}, consegnatario_privato$^{donatori\_privati}_o$, ID_turno_consegna$^{turni\_trasporti}_o$, ID_ingresso$^{ingresso\_prodotti}$)
 
-**Donatori**(\underline{ID}, _telefono_, _email_, tipologia)
+**Donatori**(\underline{ID}, *telefono*, *email*, tipologia)
 
 **Donatori_privati**(\underline{ID$^{donatori}$}, nome, cognome, data_nascita, *CF*)
 
 **Donatori_negozi**(\underline{ID$^{donatori}$}, ragione_sociale, *p_iva*)
 
-**Donatori_associazioni**(\underline{ID$^{donatori}$}, nome, _CF_)
+**Donatori_associazioni**(\underline{ID$^{donatori}$}, nome, *CF*)
 
 #### `associazioni (n,n)`
 
@@ -367,16 +367,12 @@ componente_nucleo, cliente$^{clienti}$)
 
 Per verificare la qualita' dello schema ER ristrutturato e' bene controllare che rispetti la `forma normale di Boyce Codd` e, nel caso non la rispettasse e non fosse possibile decomporre lo schema in modo da fargliela rispettare, la `terza forma normale` (che invece e' sempre possibile). Cominciamo elencando le dipendenze funzionali
 
-- Familiari(<u>CF</u>, nome, cognome, data_nascita, cliente$^{clienti}$)
+- Familiari
   - $CF \to nome, cognome, data\_nascita$
 - Clienti
-
   - $ID \to nome, cognome, data\_nascita, ente\_autorizzatore$,
-
   $data\_autorizzazione, punti\_mensili, saldo\_punti, CF, autorizzato, n\_componenti\_nucleo$
-
   - $CF \to nome, cognome, data\_nascita$
-
 - Appuntamenti
   - $ID \to data, ora, componente\_nucleo, saldo\_iniziale, saldo\_finale$
   - $data, ora \to ID, componente\_nucleo, saldo\_iniziale, saldo\_finale$
@@ -423,7 +419,7 @@ Per verificare la qualita' dello schema ER ristrutturato e' bene controllare che
   - $ID^{donatori} \to ...$
   - $CF \to ID^{donatori}$
 
-Si puo' notare che tutte le dipendenze "sinsitre" contengono una chiave, di conseguenza lo schema e' normalizzato rispetto a Boyce Codd
+Si puo' notare che tutte le dipendenze "sinistre" contengono una chiave, di conseguenza lo schema e' normalizzato rispetto a Boyce Codd
 
 #### `carico di lavoro`
 
@@ -435,3 +431,10 @@ Sapendo all'incirca quanti clienti si hanno, ci si potra' piu' o meno orientare 
 
 Si suppone che le operazioni svolte maggiormente saranno lo stoccaggio dei prodotti in inventario (quindi inserimenti di prodotti e modifiche delle quantita' nelle scorte), quindi bisogna cercare di non sprecare memoria (per esempio con colonne a `null`) e bisogna ottimizzare le operazioni in particolare su questi dati. Ovviamente anche le altre operazioni (es. creazione turni) verranno fatte regolarmente, pero' non avranno mai milioni di righe come per i clienti o i prodotti in inventario.
 
+#### `scelte d'implementazione`
+
+Sulla base di queste considerazioni, abbiamo curato maggiormente l'aspetto legato all'inventario prodotti, per esempio la decisione di non mettere un ID in `'Scarichi'` ma usare direttamente la data e l'ora come chiave primaria perche' in questo modo questi due attributi diventano chiave esterna in `'Prodotti'`, senza la necessita' di fare un Join per ricavarsele. Il lato negativo e' che abbiamo deciso di farle opzionali poiche' un prodotto potrebbe non scadere oppure lo scarico del dato prodotto potrebbe non essere stato ancora programmato.
+
+Abbiamo associato la `donazione in prodotti` al `turno di consegna` anziche' direttamente al volontario perche' in questo modo non solo possiamo ricavarci quale volontario ha ritirato le merci (nel caso di una donazione da un negozio/associazione) ma anche il turno in cui e' avvenuto il ritiro. Pena un join aggiuntivo da fare per capire chi e' il volontario consegnatario
+
+Occorre notare che l'entita' `'Scorte'` non e' essenziale ai fini dell'implementazione, l'abbiamo creata in modo da ottenere piu' ordine all'interno del database salvando per ogni prodotto la sua quantita' disponibile
