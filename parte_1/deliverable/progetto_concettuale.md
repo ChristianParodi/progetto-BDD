@@ -291,9 +291,9 @@ memorizzando per quali servizi un dato volontario e' disponibile (e in quali gio
 |'Donazioni'| 'denaro', 'prodotti'|totale/esclusivo|
 |'Donatori'| 'privati', 'negozi', 'associazioni'|totale/esclusivo|
 
-## `Progetto logico`
+# `Schema logico`
 
-![Diagramma ER ristrutturato](media/social_market_v2_ristrutturato.drawio.png)
+![Diagramma ER ristrutturato](media/social_market_v2_ristrutturato.drawio.png){width=98%}
 
 \newpage
 
