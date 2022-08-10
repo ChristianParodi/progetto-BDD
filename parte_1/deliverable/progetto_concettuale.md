@@ -3,35 +3,70 @@ geometry: "left=2cm,right=2cm,top=1cm,bottom=2cm"
 output: pdf_document
 ---
 
+## `Requisiti ristrutturati`
+
+Questa base di dati dovra' svolgere diverse mansioni anche motlo diverse fra di loro, ovvero:
+
+#### `Organizzare i prodotti in inventario`
+
+in modo da avere quanta piu' automazione possibile, quindi, per esempio, sapere quando un prodotto sta per finire, aggiornare in automatico le quantita' di un dato prodotto quando questo viene acquistato da un cliente oppure rifornito tramite donazione o acquisto del market, effettuare lo scarico dei prodotti molto vicini alla data di scadenza e memorizzare ogni ingresso prodotti nel market. Il market puo' inoltre acquistare dei prodotti in autonomia nel caso in cui, per esempio, un dato prodotto non venga donato.
+
+**Per ogni prodotto**, si memorizzano la marca, il prezzo in punti, la data di scadenza (\underline{nel caso di beni deperibili}) e la data di scadenza "reale", ovvero la data (dopo la data di scadenza) in cui un dato prodotto non e' piu' utilizzabile/commestibile.
+
+**Per ogni scorta di prodotti** viene salvata la tiplogia del prodotto (shampoo, tonno, pasta...), la marca (Garnier, Rio Mare, Barilla...) e la relativa quantita' disponibile.
+
+**Per ogni ingresso prodotti** viene salvata la data e l'ora
+
+**Per ogni scarico prodotti** viene salvata la data e l'ora.
+
+\underline{NOTA}: supponiamo che per ogni scarico si definiscano la data e l'ora, ma che il volontario gli venga assegnato in seguito perche', per esempio, lo scarico e' tra un mese.
+
+#### `Gestire i vari appuntamenti con la clientela`
+
+in modo da memorizzare i vari dati di un appuntamento oltre a poter risalire al cliente che vi ha partecipato, al volontario che lo ha supervisioanto a quali prodotti sono stati acquistati. E' inoltre necessario risalire non solo al cliente ma anche al suo nucleo familiare, siccome i suoi componenti possono acquistare i prodotti a nome del cliente stesso (\underline{se autorizzati a spendere i punti}, in genere chi e' sopra i 16 anni d'eta'). Supponiamo che un cliente possa avere piu' contatti (recapiti telefonici e email) e che fornisca lui i recapiti dei familiari, di conseguenza i familiari non dovranno fornire alcun recapito.
+
+**Per ogni appuntamento** si memorizza la data, l'ora, il componente del nucleo familiare che vi prende parte, il saldo iniziale e il saldo finale.
+
+##### `Ricevere le donazioni`
+
+che possono essere in denaro oppure prodotti, forniti da diverse tipolgie di donatori (privati, negozi, associazioni). Nel caso delle donazioni in prodotti, la consegna al market viene effettuata rispettivamente dal privato nel caso appunto di una donazione in prodotti da un privato, e da un volontario se invece la donazione e' fatta da un negozio o associazione. In ogni caso, ogni donazione viene salvata e collegata al suo donatore e nel caso di una donazione in denaro verra' salvato l'importo, mentre per la donazione in prodotti verra' aggiornato l'inventario e verra' salvato l'ingresso prodotti.
+
+**Per ogni donazione** vengono memorizzate la data, l'ora, e, nel caso di una donazione in denaro, l'importo,
+
+**Per ogni donatore** vengono memorizzati i recapiti (numero di telefono e email), univoci per ogni donatore. Nel caso di un donatore privato si salvano inoltre il nome, il cognome, la data di nascita e il codice fiscale. Per i negozi si salva la ragione sociale e la partita IVA e, infine, per le associazioni il nome e il codice fiscale.
+
+#### `Organizzare il lavoro dei volontari`
+
+memorizzando per quali servizi un dato volontario e' disponibile (e in quali giorni/ore) e organizzando i turni anche in base a queste informazioni.
+
+**Per ogni volontario** si salva il nome, il cognome, la data di nascita, le (eventuali) associazioni a cui e' collegato e i recapiti (univoci, email e numero di telefono).
+
+**Per ogni turno** si salva la data, l'ora di inizio e l'ora di fine. Nel caso di un turno di trasporto merci, si salva anche l'ora del trasporto, il numero di colli da trasportare e la sede del ritiro.
+
+**Per ogni servizio** vengono salvati il nome (es. ritiro merci) e, nel caso di un trasporto merci, il tipo di veicolo utilizzato.
+
 ## `Progetto concettuale`
 
 ![Diagramma ER](media/social_market_v2.drawio.png)
-
-![Diagramma ER ristrutturato](media/social_market_v2_ristrutturato.drawio.png)
 
 \newpage
 
 ## `Dizionario entita'`
 
-- `Telefoni`
-  - **numero**: `string`
-  - cliente$^{clienti}$: `int`
-    - identificativo del cliente a cui e' collegato il numero di telefono
-
-- `Email`
-  - **indirizzo**: `string`
-  - cliente$^{clienti}$: `int`
-    - identificativo del cliente a cui e' collegato l'indirizzo email
-  
 - `Clienti`
+
   - **ID**: `int`
     - Numero identificativo (unico per ogni cliente)
   - nome: `string`
   - cognome: `string`
   - data di nascita: `date`
   - codice fiscale: `string`
+  - telefono: `string`
+    - Numero/i di telefono associati al cliente
+  - email: `string`
+    - Indirizzo/i email associati al cliente
   - ente_autorizzatore: `string`
-    - L'ente  che ha concesso l'autorizzazione al cliente
+    - L'ente che ha concesso l'autorizzazione al cliente
   - data_autorizzazione: `date`
     - data di conseguimento dell'autorizzazione
   - scadenza_autorizzazione: `date`
@@ -46,6 +81,7 @@ output: pdf_document
     - se il cliente e' autorizzato a spendere i punti oppure no
 
 - `Familiari`
+
   - **CF**: `string`
     - codice fiscale
   - nome: `string`
@@ -57,38 +93,33 @@ output: pdf_document
     - se e' autorizzato a spendere i punti oppure no
 
 - `Volontari`
+
   - **ID**: `int`
     - Numero identificativo del volontario (unico per ogni volontario)
   - nome: `string`
   - cognome: `string`
-  - data di nascita: `date`
+  - data_nascita: `date`
   - telefono: `string`
-    - unico per ogni volontario   
+    - unico per ogni volontario
   - email: `string`
     - unico per ogni volontario
   - disponibilita': `string`
     - fascia oraria e giorni in cui e' disponibile per i servizi (es. il giovedi' dalle 3 alle 5)
+  - associazione: `string`
+    - l'eventuale associazione/i a cui il volontario e' collegato
 
-- `Associazioni`
-  - **nome**: `string`
-  
 - `Prodotti`
+
   - **ID**: `int`
     - identificativo del singolo prodotto
   - scadenza: `date`
   - scadenza_reale: `date`
     - data oltre il quale e' necessario effettuare lo scarico del prodotto
-  - codice_prodotto$^{scorte}$: `int`
-    - identificativo della categoria di prodotto
-  - ID_ingresso$^{ingresso\_prodotti}$: `int`
-    - ingresso prodotti in cui il singolo prodotto e' entrato nel market
-  - data_scarico$^{scarichi}$: `date`
-  - ora_scarico$^{scarichi}$: `time`
 
 - `Scarichi`
+
   - **data**: `date`
   - **ora**: `time`
-  - volontario$^{volontari}$: `int`
 
 - `Scorte`
   - **codice_prodotto**: `int`
@@ -99,22 +130,24 @@ output: pdf_document
     - marca del prodotto (de Cecco, Rio Mare...)
   - prezzo: `float`
     - costo in punti
-  - quantita: `int`
+  - quantita': `int`
     - Quantita' disponibile di un dato prodotto in magazzino
 
-- `Ingresso_prodotti`
+- `Ingresso prodotti`
   - **ID**: `int`
   - data: `date`
   - ora: `time`
-  
+
 - `Acquisto`
-  - **ID_ingresso**$^{ingresso\_prodotti}$: `int`
   - importo_speso: `float`
+    - importo speso per l'acquisto dei prodotti
 
 - `Servizi`
   - **ID**: `int`
   - nome: `string`
     - nome del servizio (es. riordino prodotti)
+
+- `Servizio -> trasporti`
   - veicolo: `string`
     - tipologia del veicolo usato nel caso di un servizio di trasporti
 
@@ -124,9 +157,7 @@ output: pdf_document
   - ora_inizio: `time`
   - ora_fine: `time`
   
-- `Turni_trasporto`
-  - **ID**$^{turni}$: `int`
-  - data$^{turni}$: `date`
+- `Turni -> trasporto`
   - ora: `time`
   - n_colli: `int`
     - Numero di cestelli/scatoloni da ritirare
@@ -138,21 +169,12 @@ output: pdf_document
   - ora: `time`
   - tipologia: `string`
     - "denaro" o "prodotti"
-  - donatore$^{donatori}$: `int`
 
-- `Donazioni_denaro`
-  - **ID**$^{donazioni}$: `int`
+- `Donazioni -> denaro`
   - importo: `float`
+    - ammontare della donazione
 
-- `Donazioni_prodotti`
-  - **ID**$^{donazioni}$: `int`
-  - ID_ingresso$^{ingresso\_prodotti}$: `int`
-    - identificativo dell'ingresso prodotti che contiene i prodotti donati
-  - turno_trasporti$^{turni\_trasporti}$
-    - ID del turno durante cui si svolge il ritiro, `NULL` se la donazione e' da un privato 
-  - consegnatario_privato$^{donatori\_privato}$: `int`
-    - ID del consegnatario privato se la donazione e' da un privato,
-      `NULL` altrimenti
+- `Donazioni -> prodotti`
 
 - `Donatori`
   - **ID**: `int`
@@ -161,62 +183,137 @@ output: pdf_document
   - tipologia: `string`
     - "privato", "negozio" o "associazione"
 
-- `Donatori_privati`
-  - **ID**$^{donatori}$: `int`
+- `Donatori -> privati`
   - nome: `string`
   - cognome: `string`
   - data_nascita: `date`
   - CF: `string`
     - codice fiscale
 
-- `Donatori_negozi`
-  - **ID**$^{donatori}$: `int`
+- `Donatori -> negozi`
   - ragione_sociale: `string`
   - p_iva: `string`
 
-- `Donatori_associazioni`
-  -  **ID**$^{donatori}$: `int`
-  -  nome: `string`
-  -  CF: `string`
-     -  codice fiscale
+- `Donatori -> associazioni`
+  - nome: `string`
+  - CF: `string`
+    - codice fiscale
 
-### `associazioni (n, n)`
+## `vincoli d'integrita'`
 
-- `appuntamenti_prodotti`
-  - **prodotto**$^{prodotti}$: `int`
-    - identificativo del prodotto acquistato
-  - **appuntamento**$^{appuntamenti}$: `int`
-    - appuntamento durante il quale il prodotto e' stato acquistato
-  - quantita'
+- `Familiari`
+  - l'autorizzazione a spendere i punti si ha se il componente
+    del nucelo familiare ha piu' di 16 anni di eta' (ma puo' comunque essere revocata per qualsiasi motivo)
+  - 'CF' e' univoco
 
-- `volontari_associazioni`
-  - **volontario**$^{volontari}$: `int`
-  - **associazione**$^{associazioni}$: `string`
+- `Clienti`
+  - 'ID' e' univoco
+  - Ogni cliente puo' avere uno o piu' numeri di telefono
+  - Ogni cliente puo' avere uno o piu' indirizzi email
+  - il codice fiscale e' univoco
+  - la scadenza dell'autorizzazione e' di default 6 mesi dopo la data dell'autorizzazione
+  - la data dell'autorizzazione deve essere superiore o uguale alla data dell'inserimento
+  - la data di scadenza deve essere maggiore della data di autorizzazione
+  - i punti mensili devono essere compresi tra 30 e 60
+  - il saldo punti non puo' essere minore di 0
+  - data di nascita deve essere una data passata (non nel futuro)
+  - numero componenti familiari deve essere maggiore di 0
 
-- `volontari_turni`
-  - **volontario**$^{volontari}$: `int`
-  - **turno**$^{turni}$: `int`
+- `Appuntamenti`
+  - 'ID e' univoco'
+  - 'saldo_iniziale' deve essere maggiore di 0
+  - 'saldo_finale' deve essere minore di 'saldo_iniziale'
 
-- `volontari_servizi`
-  - **volontario**$^{volontari}$: `int`
-  - **servizio**$^{servizi}$: `string`
+- `Prodotti`
+  - 'ID' e' univoco
+  - 'scadenza_reale' deve essere maggiore di 'scadenza'
 
-## `carico di lavoro`
+- `Scorte`
+  - 'codice_prodotto' e' univoco
+  - quantita' deve essere maggiore o uguale di 0
+  - 'prezzo' deve essere maggiore di 0
 
-Per effettuare tutte le operazioni al meglio, e' necessario stimare un carico di lavoro (quali operazioni verranno fatte piu' spesso, il volume dei dati nel tempo...).
+- `Volontari`
+  - 'ID' e' univoco
+  - 'data_nascita' deve essere maggiore di 18 anni nel passato
+  - telefono deve essere univoco
+  - email deve essere univoca
 
-Essendo un social market, ci si aspetta che abbia (sfortunatamente) abbastanza clienti ma non nell'ordine delle decine di milioni, per esempio. Sapendo che la popolazione italiana e' di circa $60,262,778$ e che le persone in poverta' assoluta sono circa $5,600,000$ nel 2022 (dati ISTAT), in percentuale siamo sul circa $10,8\%$. Ora, prendendo la popolazione per esempio di Genova nello stesso anno ($568,999$), il $10,8\%$ corrisponde a  circa $61,451.892$, approssimato diventa $61,452$. In ogni caso siamo sulle `decine/centiaia di migliaia (per le citta' piu' popolose) di clienti`. Occorre notare che per ogni cliente in media si avra' una famiglia al seguito, quindi, supponendo che mediamente le famiglie siano formate da $4$ persone, si avra' qualche `centiaia di migliaia` $\cdot$ `4`, che nel caso delle citta' piu' popolose (es. Roma) esubera il milione di circa `200k`. Quindi, nel caso peggiore, si avranno `1.200.000` clienti tra clienti autorizzati e i loro familiari.
+- `Turni`
+  - 'ID' e' univoco
 
-Sapendo all'incirca quanti clienti si hanno, ci si potra' piu' o meno orientare per capire di quanti prodotti il market avra' bisogno, sicuramente piu' dei clienti. Quindi si suppone che, per quantita', i prodotti saranno quelli con il maggior volume tra tutti gli altri dati, seguiti dai clienti (e i loro familiari).
+- `Turni -> trasporti`
+  - 'n_colli' deve essere maggiore di 0
 
-Si suppone che le operazioni svolte maggiormente saranno lo stoccaggio dei prodotti in inventario (quindi inserimenti di prodotti e modifiche delle quantita' nelle scorte), quindi bisogna cercare di non sprecare memoria (per esempio con colonne a `null`) e bisogna ottimizzare le operazioni in particolare su questi dati. Ovviamente anche le altre operazioni (es. creazione turni) verranno fatte regolarmente, pero' non avranno mai milioni di righe come per  i clienti o i prodotti in inventario.
+- `Servizi`
+  - 'ID' e' univoco
 
-## `Schema logico`
+- `Servizi -> trasporti`
+  
+- `Ingresso prodotti`
+  - 'ID' e' univoco
+  - data e ora devono essere univoche insieme
+
+- `Acquisto`
+  - 'importo_speso' deve essere maggiore di 0
+
+- `Donazioni`
+  - 'ID' e' univoco
+  - data e ora devono essere univoche insieme
+  - tipologia deve essere "denaro" oppure "prodotti"
+
+- `Donazioni -> denaro`
+  - 'importo' deve essere maggiore di 0
+
+- `Donazioni -> prodotti`
+
+- `Donatori`
+  - 'ID' e' univoco
+  - telefono deve essere univoco
+  - email deve essere univoca
+  - tipologia deve essere "privato", "negozio" o "associazione"
+
+- `Donatori -> privati`
+  - 'CF' deve essere univoco
+
+- `Donatori -> negozi`
+  - 'p_iva' deve essere univoca
+
+- `Donatori -> associazioni`
+  - 'CF' deve essere univoco
+
+### `gerarchie di generalizzazione`
+
+|padre|figlio/i|tipo|
+|---------|-|----|
+|'Servizi' |'Servizio trasporti'| parziale/esclusivo|
+|'Turni'| 'Turno trasporti'|parziale/esclusivo|
+|'Donazioni'| 'denaro', 'prodotti'|totale/esclusivo|
+|'Donatori'| 'privati', 'negozi', 'associazioni'|totale/esclusivo|
+
+## `Progetto logico`
+
+![Diagramma ER ristrutturato](media/social_market_v2_ristrutturato.drawio.png)
+
+\newpage
+
+#### `eliminazione delle gerarchie`
+
+- `Servizi`
+  Abbiamo pensato fosse sensato immagazzinare i dati del figlio nel padre (come attributi opzionali), siccome l'ID del padre e' la chiave anche del figlio, nel caso si fosse deciso di tenere 2 tabelle separate, si sarebbe dovuto fare un join per accedere ai dati del veicolo.
+- `Turni`
+  Siccome sia padre che figlio sono associate ad altre tabelle, e' stato necessario "mantenere" le differenze e quindi abbiamo eliminato la gerarchia in favore di 2 tabelle associate
+- `Donazioni`
+  In questo caso abbiamo optato per una soluzione ibrida, ovvero eliminare il figlio nel caso di `Donazioni -> denaro` (siccome non e' associata a niente) e mantenere 2 tabelle associate per `Donazioni -> prodotti` (visto che e' associata a diverse tabelle).
+- `Donatori`
+  In questo caso per tutti e 3 i figli abbiamo associato una tabella aggiuntiva perche', anche se alcune non sono associate con niente, ci sembra piu' comodo avere memorizzati dati cosi' diversi in tabelle diverse.
+
+#### `schema logico`
 
 **Familiari**(\underline{CF}, nome, cognome, data_nascita, autorizzato,
 componente_nucleo, cliente$^{clienti}$)
 
-**Clienti**(\underline{ID}, nome, cognome, data_nascita, ente_autorizzatore, data_autorizzazione, scadenza_autorizzazione, punti_mensili, saldo_punti, *CF*, n_componenti_nucleo, autorizzato)
+**Clienti**(\underline{ID}, nome, cognome, data*nascita, ente_autorizzatore, data_autorizzazione, scadenza_autorizzazione, punti_mensili, saldo_punti, *CF*, n_componenti_nucleo, autorizzato)
 
 **Telefoni**(\underline{numero}, cliente$^{clienti}$)
 
@@ -234,29 +331,27 @@ componente_nucleo, cliente$^{clienti}$)
 
 **Acquisto**(\underline{ID\_ingresso$^{ingresso\_prodotti}$}, importo_speso)
 
-**Volontari**(\underline{ID}, nome, cognome, data_nascita, *telefono*, *email*, disponibilita')
+**Volontari**(\underline{ID}, nome, cognome, data_nascita, telefono, email, disponibilita')
 
 **Associazioni**(\underline{nome})
 
 **Servizi**(\underline{ID}, nome, veicolo$_o$)
 
-**Turni**(\underline{ID}, data, ora\_inizio, ora\_fine)
+**Turni**(\underline{ID}, data, ora_inizio, ora_fine)
 
 **Turno_trasporti**(\underline{ID$^{turni}$}, volontario$^{volontario}$ ,ora, n_colli, sede_ritiro)
 
-**Donazioni**(\underline{ID}, tipologia, data, ora, donatore$^{donatori}$)
-
-**Donazioni_denaro**(\underline{donazione$^{donazioni}$}, importo)
+**Donazioni**(\underline{ID}, tipologia, data, ora, importo$_o$ donatore$^{donatori}$)
 
 **Donazioni_prodotti**(\underline{donazione$^{donazioni}$}, consegnatario_privato$^{donatori\_privati}_o$, ID_turno_consegna$^{turni\_trasporti}_o$, ID_ingresso$^{ingresso\_prodotti}$)
 
-**Donatori**(\underline{ID}, *telefono*, *email*, tipologia)
+**Donatori**(\underline{ID}, _telefono_, _email_, tipologia)
 
 **Donatori_privati**(\underline{ID$^{donatori}$}, nome, cognome, data_nascita, *CF*)
 
 **Donatori_negozi**(\underline{ID$^{donatori}$}, ragione_sociale, *p_iva*)
 
-**Donatori_associazioni**(\underline{ID$^{donatori}$}, nome, *CF*)
+**Donatori_associazioni**(\underline{ID$^{donatori}$}, nome, _CF_)
 
 #### `associazioni (n,n)`
 
@@ -275,10 +370,13 @@ Per verificare la qualita' dello schema ER ristrutturato e' bene controllare che
 - Familiari(<u>CF</u>, nome, cognome, data_nascita, cliente$^{clienti}$)
   - $CF \to nome, cognome, data\_nascita$
 - Clienti
+
   - $ID \to nome, cognome, data\_nascita, ente\_autorizzatore$,
 
-   $data\_autorizzazione, punti\_mensili, saldo\_punti, CF, autorizzato, n\_componenti\_nucleo$
+  $data\_autorizzazione, punti\_mensili, saldo\_punti, CF, autorizzato, n\_componenti\_nucleo$
+
   - $CF \to nome, cognome, data\_nascita$
+
 - Appuntamenti
   - $ID \to data, ora, componente\_nucleo, saldo\_iniziale, saldo\_finale$
   - $data, ora \to ID, componente\_nucleo, saldo\_iniziale, saldo\_finale$
@@ -322,26 +420,18 @@ Per verificare la qualita' dello schema ER ristrutturato e' bene controllare che
   - $ID^{donatori} \to ...$
   - $p\_iva \to ID^{donatori}$
 - Donatori_associazioni
-  -  $ID^{donatori} \to ...$
-  -  $CF \to ID^{donatori}$
+  - $ID^{donatori} \to ...$
+  - $CF \to ID^{donatori}$
 
 Si puo' notare che tutte le dipendenze "sinsitre" contengono una chiave, di conseguenza lo schema e' normalizzato rispetto a Boyce Codd
-## `Query`
 
-Tutti i prodotti acquistati durante l'ultimo appuntamento del cliente con ID = 1
+#### `carico di lavoro`
 
-```sql
-SELECT * 
-FROM Prodotti
-JOIN Appuntamenti_prodotti
-ON Appuntamenti_prodotti.prodotto = prodotti.ID
-JOIN Appuntamenti
-ON Appuntamenti_prodotti.appuntamento = Appuntamenti.ID
-JOIN Clienti
-ON Appuntamenti.cliente = Clienti.ID
-WHERE Clienti.ID = 1
-```
+Per effettuare tutte le operazioni al meglio, e' necessario stimare un carico di lavoro (quali operazioni verranno fatte piu' spesso, il volume dei dati nel tempo...).
 
+Essendo un social market, ci si aspetta che abbia (sfortunatamente) abbastanza clienti ma non nell'ordine delle decine di milioni, per esempio. Sapendo che la popolazione italiana e' di circa $60,262,778$ e che le persone in poverta' assoluta sono circa $5,600,000$ nel 2022 (dati ISTAT), in percentuale siamo sul circa $10,8\%$. Ora, prendendo la popolazione per esempio di Genova nello stesso anno ($568,999$), il $10,8\%$ corrisponde a circa $61,451.892$, approssimato diventa $61,452$. In ogni caso siamo sulle `decine/centiaia di migliaia (per le citta' piu' popolose) di clienti`. Occorre notare che per ogni cliente in media si avra' una famiglia al seguito, quindi, supponendo che mediamente le famiglie siano formate da $4$ persone, si avra' qualche `centiaia di migliaia` $\cdot$ `4`, che nel caso delle citta' piu' popolose (es. Roma) esubera il milione di circa `200k`. Quindi, nel caso peggiore, si avranno `1.200.000` clienti tra clienti autorizzati e i loro familiari.
 
+Sapendo all'incirca quanti clienti si hanno, ci si potra' piu' o meno orientare per capire di quanti prodotti il market avra' bisogno, sicuramente piu' dei clienti. Quindi si suppone che, per quantita', i prodotti saranno quelli con il maggior volume tra tutti gli altri dati, seguiti dai clienti (e i loro familiari).
 
+Si suppone che le operazioni svolte maggiormente saranno lo stoccaggio dei prodotti in inventario (quindi inserimenti di prodotti e modifiche delle quantita' nelle scorte), quindi bisogna cercare di non sprecare memoria (per esempio con colonne a `null`) e bisogna ottimizzare le operazioni in particolare su questi dati. Ovviamente anche le altre operazioni (es. creazione turni) verranno fatte regolarmente, pero' non avranno mai milioni di righe come per i clienti o i prodotti in inventario.
 
