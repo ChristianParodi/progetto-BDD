@@ -1,0 +1,59 @@
+import random
+from unicodedata import digit
+
+
+def gen_code():
+    result = ""
+    letters = [ch for ch in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
+    digits = [ch for ch in "0123456789"]
+
+    for _ in range(6):
+        result += random.choice(letters)
+    for _ in range(2):
+        result += random.choice(digits)
+    result += random.choice(letters)
+    for _ in range(2):
+        result += random.choice(digits)
+    result += random.choice(letters)
+    for _ in range(3):
+        result += random.choice(digits)
+    result += random.choice(letters)
+
+    return result
+
+
+def gen_fiscal_code(unique=False, n=1):
+    result = []
+    for i in range(n):
+        result.append(gen_code())
+        if unique:
+            while result.count(result[i]) > 1:
+                result[i] = gen_code()
+
+    return result[0] if len(result) == 1 else result
+
+
+def gen_phone_number():
+    digits = "0123456789"
+    result = "+39"
+    for _ in range(10):
+        result += random.choice(digits)
+    return result
+
+
+def gen_phone_numbers(unique=True, n=1):
+    result = []
+    for _ in range(n):
+        result.append(gen_phone_number())
+        if unique:
+            while result.count(result[i]) > 1:
+                result[i] = gen_phone_number()
+
+
+if __name__ == "__main__":
+    # creo una lista con 800 codici fiscali
+    cf = [gen_fiscal_code() for _ in range(800)]
+
+    with open("codici_fiscali.txt", "w") as file:
+        for i in cf:
+            file.write(i + "\n")
