@@ -5,7 +5,7 @@ CREATE TABLE familiari (
     CF CHAR(16) PRIMARY KEY,
     nome VARCHAR(30) NOT NULL,
     cognome VARCHAR(30) NOT NULL,
-    data_nascita DATE NOT NULL,
+    data_nascita DATE NOT NULL CHECK(data_nascita < CURRENT_DATE),
     autorizzato BOOLEAN NOT NULL,
     componente_nucleo VARCHAR(30) NOT NULL,
     cliente int NOT NULL,
@@ -15,13 +15,13 @@ CREATE TABLE familiari (
 );
 
 CREATE TABLE clienti (
-    ID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    ID SERIAL PRIMARY KEY,
     nome VARCHAR(30) NOT NULL,
     cognome VARCHAR(30) NOT NULL,
     data_nascita DATE NOT NULL CHECK(data_nascita <= CURRENT_DATE - INTERVAL '18' YEAR),
     ente_autorizzatore VARCHAR(255) NOT NULL,
     data_autorizzazione DATE DEFAULT CURRENT_DATE CHECK(data_autorizzazione >= CURRENT_DATE),
-    scadenza_autorizzazione DATE DEFAULT(data_autorizzazione + INTERVAL '6' MONTH),
+    scadenza_autorizzazione DATE NOT NULL, -- da implementare con un trigger data_autorizzazione + 6 mesi
     punti_mensili INT NOT NULL CHECK(punti_mensili BETWEEN 30 AND 60),
     saldo_punti INT NOT NULL CHECK(saldo_punti >= 0),
     CF CHAR(16) UNIQUE NOT NULL,
@@ -46,7 +46,7 @@ CREATE TABLE email (
 );
 
 CREATE TABLE appuntamenti (
-    ID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    ID SERIAL PRIMARY KEY,
     data DATE NOT NULL,
     ora TIME NOT NULL,
     componente_nucleo VARCHAR(30) NOT NULL,
@@ -58,7 +58,7 @@ CREATE TABLE appuntamenti (
 );
 
 CREATE TABLE prodotti (
-    ID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    ID SERIAL PRIMARY KEY,
     scadenza DATE,
     scadenza_reale DATE CHECK(scadenza_reale >= scadenza),
     codice_prodotto INT NOT NULL,
@@ -77,7 +77,7 @@ CREATE TABLE prodotti (
 );
 
 CREATE TABLE scorte (
-    codice_prodotto INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    codice_prodotto SERIAL PRIMARY KEY,
     tipologia VARCHAR(255) NOT NULL,
     marca VARCHAR(255) NOT NULL,
     prezzo FLOAT NOT NULL CHECK(prezzo > 0),
@@ -86,9 +86,9 @@ CREATE TABLE scorte (
 );
 
 CREATE TABLE ingresso_prodotti (
-    ID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    data DATE NOT NULL,
-    ora TIME NOT NULL,
+    ID SERIAL PRIMARY KEY,
+    data DATE DEFAULT CURRENT_DATE,
+    ora TIME DEFAULT CURRENT_TIME,
     UNIQUE(data, ora)
 );
 
@@ -98,12 +98,12 @@ CREATE TABLE scarichi (
     volontario INT,
     PRIMARY KEY (data, ora),
     FOREIGN KEY (volontario) REFERENCES volontari(ID)
-                     ON DELETE SET NULL
+                     ON DELETE NO ACTION
                      ON UPDATE CASCADE
 );
 
 CREATE TABLE acquisto (
-    ID INT PRIMARY KEY ,
+    ID INT PRIMARY KEY,
     importo_speso FLOAT NOT NULL CHECK(importo_speso > 0),
     FOREIGN KEY (ID) REFERENCES ingresso_prodotti(ID)
                       ON DELETE CASCADE
@@ -111,7 +111,7 @@ CREATE TABLE acquisto (
 );
 
 CREATE TABLE volontari (
-    ID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    ID SERIAL PRIMARY KEY,
     nome VARCHAR(30) NOT NULL,
     cognome VARCHAR(30) NOT NULL,
     data_nascita DATE NOT NULL CHECK(data_nascita < CURRENT_DATE),
@@ -125,16 +125,17 @@ CREATE TABLE associazioni (
 );
 
 CREATE TABLE servizi (
-    ID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    ID SERIAL PRIMARY KEY,
     nome VARCHAR(255) UNIQUE NOT NULL,
     veicolo VARCHAR(255)
 );
 
 CREATE TABLE turni (
-    ID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    ID SERIAL PRIMARY KEY,
     data DATE NOT NULL,
     ora_inizio TIME NOT NULL,
-    ora_fine TIME NOT NULL
+    ora_fine TIME NOT NULL,
+    UNIQUE(data, ora_inizio, ora_fine)
 );
 
 CREATE TABLE turni_trasporti (
@@ -152,10 +153,10 @@ CREATE TABLE turni_trasporti (
 );
 
 CREATE TABLE donazioni (
-    ID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    ID SERIAL PRIMARY KEY,
     tipologia VARCHAR(255) NOT NULL CHECK(tipologia IN ('denaro', 'prodotti')),
-    data DATE NOT NULL,
-    ora TIME NOT NULL,
+    data DATE DEFAULT CURRENT_DATE,
+    ora TIME DEFAULT CURRENT_TIME,
     importo FLOAT,
     donatore INT NOT NULL,
     UNIQUE(data, ora),
@@ -186,7 +187,7 @@ CREATE TABLE donazioni_prodotti (
 );
 
 CREATE TABLE donatori (
-    ID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    ID SERIAL PRIMARY KEY,
     telefono VARCHAR(13) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     tipologia VARCHAR(255) NOT NULL CHECK(tipologia IN ('privato', 'negozio', 'associazione'))
@@ -196,7 +197,7 @@ CREATE TABLE donatori_privati (
     ID INT PRIMARY KEY,
     nome VARCHAR(30) NOT NULL,
     cognome VARCHAR(30) NOT NULL,
-    data_nascita DATE NOT NULL,
+    data_nascita DATE NOT NULL CHECK(data_nascita < CURRENT_DATE),
     CF CHAR(16) UNIQUE NOT NULL,
     FOREIGN KEY (ID) REFERENCES donatori(ID)
                               ON DELETE CASCADE
