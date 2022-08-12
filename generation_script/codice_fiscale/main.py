@@ -50,6 +50,14 @@ def gen_phone_numbers(unique=True, n=1):
                 result[i] = gen_phone_number()
 
 
+def gen_p_iva():
+    digits = [ch for ch in '0123456789']
+    result = ""
+    for _ in range(16):
+        result += random.choice(digits)
+    return result
+
+
 if __name__ == "__main__":
     # creo una lista con 800 codici fiscali
     cf = [gen_fiscal_code() for _ in range(800)]
