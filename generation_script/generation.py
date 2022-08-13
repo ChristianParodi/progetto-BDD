@@ -5,7 +5,7 @@ import random
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
 
-from codice_fiscale.main import gen_fiscal_code, gen_p_iva, gen_phone_number
+from codice_fiscale.main import gen_fiscal_code, gen_p_iva, gen_phone_number, gen_email
 
 fake = Faker('it_IT')
 fake.add_provider(person)
@@ -13,7 +13,7 @@ fake.add_provider(date_time)
 fake.add_provider(lorem)
 fake.add_provider(company)
 
-enti = ["Servizi sociali", "centro d'ascolto"]
+enti = ["Servizi sociali", "centro ascolto"]
 cf = []
 with open("codice_fiscale/codici_fiscali.txt", "r") as cf_file:
     for line in cf_file:
@@ -28,6 +28,7 @@ N = 800
 with open("generation.sql", "w") as file:
     file.write("SET search_path TO 'social_market';\n\n")
     file.write('''
+    BEGIN;
     -- clienti
     INSERT INTO clienti VALUES\n\t''')
 
@@ -45,14 +46,14 @@ with open("generation.sql", "w") as file:
             (i + 1, fake.first_name(), fake.last_name(), str(fake.date_of_birth(
                 minimum_age=18, maximum_age=60)), random.choice(enti), date_auth, scad_auth,
              random.choice([i for i in range(30, 61)]), random.choice(
-                [i for i in range(30, 61)]), current_cf, random.randint(0, 10), 1)
+                [i for i in range(30, 61)]), current_cf, random.randint(1, 10), 'true')
         )
 
     for i in range(len(clienti)):
         if i != len(clienti) - 1:
             file.write(str(clienti[i]) + ',\n\t')
         else:
-            file.write(str(clienti[i]) + "\n\n")
+            file.write(str(clienti[i]) + ";\n\n")
 
     # Familiari
     # NOTA: e' necessario andare a prendere tutti i clienti inseriti e controllare il loro numero di familiari prima di inserirli
@@ -63,17 +64,21 @@ with open("generation.sql", "w") as file:
     cf = gen_fiscal_code(unique=True, n=N)
 
     for i in range(N):
+        date_of_birth = fake.date_of_birth(maximum_age=60)
+        today = date.today()
+        age = today.year - date_of_birth.year - \
+            ((today.month, today.day) < (date_of_birth.month, date_of_birth.day))
         for parent in range(clienti[i][-2]):  # n_componenti_nucleo
             familiari.append(
                 (gen_fiscal_code(), fake.first_name(), fake.last_name(),
-                 str(fake.date_of_birth(maximum_age=60)), fake.word(), clienti[i][0])
+                 str(date_of_birth), 'true' if age > 16 else 'false', fake.word(), clienti[i][0])
             )
 
     for i in range(len(familiari)):
         if i != len(familiari) - 1:
             file.write(str(familiari[i]) + ',\n\t')
         else:
-            file.write(str(familiari[i]) + "\n\n")
+            file.write(str(familiari[i]) + ";\n\n")
 
     # Telefoni
     file.write('''
@@ -90,7 +95,7 @@ with open("generation.sql", "w") as file:
         if i != len(telefoni) - 1:
             file.write(str(telefoni[i]) + ',\n\t')
         else:
-            file.write(str(telefoni[i]) + "\n\n")
+            file.write(str(telefoni[i]) + ";\n\n")
 
     # email
     file.write('''
@@ -98,19 +103,19 @@ with open("generation.sql", "w") as file:
     INSERT INTO email VALUES\n\t''')
     email = []
     for i in range(N):
-        current = fake.word() + "@gmail.com"
+        current = gen_email()
         email.append((current, clienti[i][0]))
 
     # aggiungiamo qualche mail a caso
     for _ in range(N):
-        current = fake.word() + "@gmail.com"
+        current = gen_email()
         email.append((current, random.choice(clienti)[0]))
 
     for i in range(len(email)):
         if i != len(email) - 1:
             file.write(str(email[i]) + ',\n\t')
         else:
-            file.write(str(email[i]) + "\n\n")
+            file.write(str(email[i]) + ";\n\n")
 
     # volontari
     file.write('''
@@ -118,27 +123,27 @@ with open("generation.sql", "w") as file:
     INSERT INTO volontari VALUES\n\t''')
     volontari = []
     disponibilita = [
-        "lunedi' dalle 9 alle 21",
-        "lunedi' dalle 10 alle 15",
-        "lunedi' dalle 17 alle 21",
-        "lunedi' dalle 15 alle 17",
-        "martedi' dalle 9 alle 21",
-        "martedi' dalle 10 alle 15",
-        "martedi' dalle 17 alle 21",
-        "martedi' dalle 15 alle 17",
-        "mercoledi' dalle 9 alle 21",
-        "mercoledi' dalle 10 alle 15",
-        "mercoledi' dalle 17 alle 21",
-        "mercoledi' dalle 15 alle 17",
-        "giovedi' dalle 9 alle 21",
-        "giovedi' dalle 10 alle 15",
-        "giovedi' dalle 17 alle 21",
-        "giovedi' dalle 15 alle 17",
-        "venerdi' dalle 9 alle 21",
-        "venerdi' dalle 10 alle 15",
-        "venerdi' dalle 17 alle 21",
-        "venerdi' dalle 15 alle 17",
-        "sabato' dalle 9 alle 21",
+        "lunedi dalle 9 alle 21",
+        "lunedi dalle 10 alle 15",
+        "lunedi dalle 17 alle 21",
+        "lunedi dalle 15 alle 17",
+        "martedi dalle 9 alle 21",
+        "martedi dalle 10 alle 15",
+        "martedi dalle 17 alle 21",
+        "martedi dalle 15 alle 17",
+        "mercoledi dalle 9 alle 21",
+        "mercoledi dalle 10 alle 15",
+        "mercoledi dalle 17 alle 21",
+        "mercoledi dalle 15 alle 17",
+        "giovedi dalle 9 alle 21",
+        "giovedi dalle 10 alle 15",
+        "giovedi dalle 17 alle 21",
+        "giovedi dalle 15 alle 17",
+        "venerdi dalle 9 alle 21",
+        "venerdi dalle 10 alle 15",
+        "venerdi dalle 17 alle 21",
+        "venerdi dalle 15 alle 17",
+        "sabato dalle 9 alle 21",
         "sabato dalle 10 alle 15",
         "sabato dalle 17 alle 21",
         "sabato dalle 15 alle 17",
@@ -150,25 +155,41 @@ with open("generation.sql", "w") as file:
     for i in range(N):
         volontari.append(
             (i + 1, fake.first_name(), fake.last_name(), str(fake.date_of_birth(maximum_age=70)),
-             gen_phone_number(), fake.word() + "@gmail.com", random.choice(disponibilita))
+             gen_phone_number(), gen_email(), random.choice(disponibilita))
         )
 
     for i in range(len(volontari)):
         if i != len(volontari) - 1:
             file.write(str(volontari[i]) + ',\n\t')
         else:
-            file.write(str(volontari[i]) + "\n\n")
+            file.write(str(volontari[i]) + ";\n\n")
 
     # appuntamenti
     file.write('''
     -- appuntamenti
     INSERT INTO appuntamenti VALUES\n\t''')
     appuntamenti = []
+    # si differenziano di 15 minuti e durano 5 minuti
+    date_times = [fake.future_datetime()]
+
+    for i in range(N):
+        date_times.append(date_times[i] + relativedelta(minutes=20))
+
+    # 'YYYY-mm-aa hh:mm:ss -> ['YYYY-mm-aa', 'hh:mm:ss']
+    for i in date_times:
+        i = str(i)
+        i = (i.split()[0], i.split()[1])
+
+    for i in range(N):
+        while date_times.count(date_times[i]) > 1:
+            date_times[i] = (str(fake.future_date()), fake.time())
+
     for i in range(N):
         saldo_iniziale = random.choice([i for i in range(30, 61)])
         saldo_finale = random.choice([i for i in range(saldo_iniziale)])
+
         appuntamenti.append(
-            (i + 1, str(fake.future_date()), str(fake.time()), fake.word(), saldo_iniziale,
+            (i + 1, str(date_times[i]).split()[0], str(date_times[i]).split()[1], fake.word(), saldo_iniziale,
              saldo_finale, random.choice(clienti)[0], random.choice(volontari)[0])
         )
 
@@ -176,7 +197,7 @@ with open("generation.sql", "w") as file:
         if i != len(appuntamenti) - 1:
             file.write(str(appuntamenti[i]) + ',\n\t')
         else:
-            file.write(str(appuntamenti[i]) + "\n\n")
+            file.write(str(appuntamenti[i]) + ";\n\n")
 
     # scorte
     file.write('''
@@ -188,7 +209,7 @@ with open("generation.sql", "w") as file:
         (3, 'Tonno', 'Nostromo', 5, random.randint(50, 600)),
         (4, 'Shampoo', 'Garnier', 6, random.randint(50, 600)),
         (5, 'Shampoo', 'Testanera', 1, random.randint(50, 600)),
-        (6, 'Shampoo', 'L\'Oreal', 4, random.randint(50, 600)),
+        (6, 'Shampoo', 'L Oreal', 4, random.randint(50, 600)),
         (7, 'Pasta', 'De Cecco', 0.89, random.randint(50, 600)),
         (8, 'Pasta', 'Barilla', 0.89, random.randint(50, 600)),
         (9, 'Pasta', 'Italiamo', 1.24, random.randint(50, 600)),
@@ -209,61 +230,75 @@ with open("generation.sql", "w") as file:
         if i != len(scorte) - 1:
             file.write(str(scorte[i]) + ',\n\t')
         else:
-            file.write(str(scorte[i]) + "\n\n")
+            file.write(str(scorte[i]) + ";\n\n")
 
     # scarichi
     file.write('''
     -- scarichi
     INSERT INTO scarichi VALUES\n\t''')
     scarichi = []
+    dates = [fake.future_datetime() for _ in range(N)]
+
+    for i in range(N):
+        while dates.count(dates[i]) > 1:
+            dates[i] = fake.future_datetime()
+
     for i in range(N):
         scarichi.append(
-            (str(fake.future_date()),
-             str(fake.time()), random.choice(volontari)[0])
+            (str(dates[i]).split()[0],
+             str(dates[i]).split()[1], random.choice(volontari)[0])
         )
 
     for i in range(len(scarichi)):
         if i != len(scarichi) - 1:
             file.write(str(scarichi[i]) + ',\n\t')
         else:
-            file.write(str(scarichi[i]) + "\n\n")
+            file.write(str(scarichi[i]) + ";\n\n")
 
     # ingresso_prodotti
     file.write('''
-    -- prodotti
-    INSERT INTO prodotti VALUES\n\t''')
+    -- ingress_prodotti
+    INSERT INTO ingresso_prodotti VALUES\n\t''')
     ingresso_prodotti = []
+    dates = [fake.future_datetime() for _ in range(N)]
+
+    for i in range(N):
+        while dates.count(dates[i]) > 1:
+            dates[i] = fake.future_datetime()
+
     for i in range(N):
         ingresso_prodotti.append(
-            (i + 1, str(fake.future_date()), str(fake.time()))
+            (i + 1, str(dates[i]).split()[0], str(dates[i]).split()[1])
         )
     for i in range(len(ingresso_prodotti)):
         if i != len(ingresso_prodotti) - 1:
             file.write(str(ingresso_prodotti[i]) + ',\n\t')
         else:
-            file.write(str(ingresso_prodotti[i]) + "\n\n")
+            file.write(str(ingresso_prodotti[i]) + ";\n\n")
 
     # prodotti
     file.write('''
     -- prodotti
-    INSERT INTO prodotti(scadenza, scadenza_reale, codice_prodotto, ID_ingresso, data_scarico, ora_scarico) VALUES\n\t''')
+    INSERT INTO prodotti VALUES\n\t''')
     prodotti = []
+    k = 1
     for i in range(len(scorte)):
         for j in range(scorte[i][-1]):
             scad = fake.future_date()
             real_scad = scad + relativedelta(months=10)
             scarico = random.choice(scarichi)
             prodotti.append(
-                (str(scad), str(real_scad), scorte[i][0],
+                (k, str(scad), str(real_scad), scorte[i][0],
                  random.choice(ingresso_prodotti)[0], scarico[0], scarico[1]
                  )
             )
+            k += 1
 
     for i in range(len(prodotti)):
         if i != len(prodotti) - 1:
             file.write(str(prodotti[i]) + ',\n\t')
         else:
-            file.write(str(prodotti[i]) + "\n\n")
+            file.write(str(prodotti[i]) + ";\n\n")
     # associazioni
     file.write('''
     -- associazioni
@@ -271,31 +306,36 @@ with open("generation.sql", "w") as file:
     associazioni = []
     for i in range(30):
         associazioni.append(
-            (fake.company(), random.choice(volontari)[0])
+            fake.company()
         )
 
     for i in range(len(associazioni)):
         if i != len(associazioni) - 1:
-            file.write(str(associazioni[i]) + ',\n\t')
+            file.write(f"('{associazioni[i]}')" + ',\n\t')
         else:
-            file.write(str(associazioni[i]) + "\n\n")
+            file.write(f"('{associazioni[i]}')" + ";\n\n")
 
     # acquisto
     file.write('''
     -- acquisti
     INSERT INTO acquisti VALUES\n\t''')
     acquisti = []
+    id_ingressi = [i[0] for i in ingresso_prodotti]
+
+    for i in range(N):
+        while id_ingressi.count(id_ingressi[i]) > 1:
+            id_ingressi[i] = random.choice(ingresso_prodotti)[0]
+
     for i in range(random.randint(1, N // 2)):
         acquisti.append(
-            (random.choice(ingresso_prodotti)[
-                0], random.random() + random.randint(1, 100))
+            (id_ingressi[i], random.random() + random.randint(1, 100))
         )
 
     for i in range(len(acquisti)):
         if i != len(acquisti) - 1:
             file.write(str(acquisti[i]) + ',\n\t')
         else:
-            file.write(str(acquisti[i]) + "\n\n")
+            file.write(str(acquisti[i]) + ";\n\n")
 
     # servizi
     file.write('''
@@ -327,7 +367,7 @@ with open("generation.sql", "w") as file:
         if i != len(servizi) - 1:
             file.write(str(servizi[i]) + ',\n\t')
         else:
-            file.write(str(servizi[i]) + "\n\n")
+            file.write(str(servizi[i]) + ";\n\n")
     # turni
     file.write('''
     -- turni
@@ -339,24 +379,31 @@ with open("generation.sql", "w") as file:
             ora_inizio, '%H:%M:%S') + relativedelta(hours=5)
 
         turni.append(
-            (i + 1, str(fake.future_date()), str(ora_inizio), str(ora_fine))
+            (i + 1, str(fake.future_date()),
+             str(ora_inizio), str(ora_fine).split()[1])
         )
 
     for i in range(len(turni)):
         if i != len(turni) - 1:
             file.write(str(turni[i]) + ',\n\t')
         else:
-            file.write(str(turni[i]) + "\n\n")
+            file.write(str(turni[i]) + ";\n\n")
     # turno_trasporti
     file.write('''
     -- turni_trasporti
     INSERT INTO turni_trasporti VALUES\n\t''')
     turni_trasporti = []
+    id_turni = [i[0] for i in turni]
+
+    for i in range(N):
+        while id_turni.count(id_turni[i]) > 1:
+            id_turni[i] = random.choice(turni_trasporti)[0]
+
     for i in range(N):
         ora = fake.time()
 
         turni_trasporti.append(
-            (random.choice(turni)[0], random.choice(volontari)[
+            (id_turni[i], random.choice(volontari)[
              0], str(ora), random.randint(1, 10), fake.company())
         )
 
@@ -364,7 +411,7 @@ with open("generation.sql", "w") as file:
         if i != len(turni_trasporti) - 1:
             file.write(str(turni_trasporti[i]) + ',\n\t')
         else:
-            file.write(str(turni_trasporti[i]) + "\n\n")
+            file.write(str(turni_trasporti[i]) + ";\n\n")
     # donatori
     file.write('''
     -- donatori
@@ -377,15 +424,14 @@ with open("generation.sql", "w") as file:
     ]
     for i in range(N):
         donatori.append(
-            (i + 1, gen_phone_number(), fake.word() +
-             "@gmail.com", random.choice(tipologia))
+            (i + 1, gen_phone_number(), gen_email(), random.choice(tipologia))
         )
 
     for i in range(len(donatori)):
         if i != len(donatori) - 1:
             file.write(str(donatori[i]) + ',\n\t')
         else:
-            file.write(str(donatori[i]) + "\n\n")
+            file.write(str(donatori[i]) + ";\n\n")
     # donatori privati
     file.write('''
     -- donatori_privati
@@ -403,7 +449,7 @@ with open("generation.sql", "w") as file:
         if i != len(donatori_privati) - 1:
             file.write(str(donatori_privati[i]) + ',\n\t')
         else:
-            file.write(str(donatori_privati[i]) + "\n\n")
+            file.write(str(donatori_privati[i]) + ";\n\n")
     # donatori negozi
     file.write('''
     -- donatori_negozi
@@ -420,7 +466,7 @@ with open("generation.sql", "w") as file:
         if i != len(donatori_negozi) - 1:
             file.write(str(donatori_negozi[i]) + ',\n\t')
         else:
-            file.write(str(donatori_negozi[i]) + "\n\n")
+            file.write(str(donatori_negozi[i]) + ";\n\n")
     # donatori associazioni
     file.write('''
     -- donatori_associazioni
@@ -437,7 +483,7 @@ with open("generation.sql", "w") as file:
         if i != len(donatori_associazioni) - 1:
             file.write(str(donatori_associazioni[i]) + ',\n\t')
         else:
-            file.write(str(donatori_associazioni[i]) + "\n\n")
+            file.write(str(donatori_associazioni[i]) + ";\n\n")
     # donazioni
     file.write('''
     -- donazioni
@@ -459,7 +505,7 @@ with open("generation.sql", "w") as file:
         if i != len(donazioni) - 1:
             file.write(str(donazioni[i]) + ',\n\t')
         else:
-            file.write(str(donazioni[i]) + "\n\n")
+            file.write(str(donazioni[i]) + ";\n\n")
     # donazioni_prodotti
     file.write('''
     -- donazioni_prodotti
@@ -481,7 +527,7 @@ with open("generation.sql", "w") as file:
         if i != len(donazioni_prodotti) - 1:
             file.write(str(donazioni_prodotti[i]) + ',\n\t')
         else:
-            file.write(str(donazioni_prodotti[i]) + "\n\n")
+            file.write(str(donazioni_prodotti[i]) + ";\n\n")
 
     # associazioni (n, n)
     # prodotti_appuntamenti
@@ -494,11 +540,16 @@ with open("generation.sql", "w") as file:
             (random.choice(prodotti)[0], random.choice(appuntamenti)[0])
         )
 
+    for i in range(N):
+        while appuntamenti_prodotti.count(appuntamenti_prodotti[i]) > 1:
+            appuntamenti_prodotti[i] = (random.choice(
+                prodotti)[0], random.choice(appuntamenti)[0])
+
     for i in range(len(appuntamenti_prodotti)):
         if i != len(appuntamenti_prodotti) - 1:
             file.write(str(appuntamenti_prodotti[i]) + ',\n\t')
         else:
-            file.write(str(appuntamenti_prodotti[i]) + "\n\n")
+            file.write(str(appuntamenti_prodotti[i]) + ";\n\n")
     # volontari_associazioni
     file.write('''
     -- volontari_associazioni
@@ -506,14 +557,19 @@ with open("generation.sql", "w") as file:
     volontari_associazioni = []
     for i in range(N):
         volontari_associazioni.append(
-            (random.choice(volontari)[0], random.choice(associazioni)[0])
+            (random.choice(volontari)[0], random.choice(associazioni))
         )
+
+    for i in range(N):
+        while volontari_associazioni.count(volontari_associazioni[i]) > 1:
+            volontari_associazioni[i] = (random.choice(
+                volontari)[0], random.choice(associazioni))
 
     for i in range(len(volontari_associazioni)):
         if i != len(volontari_associazioni) - 1:
             file.write(str(volontari_associazioni[i]) + ',\n\t')
         else:
-            file.write(str(volontari_associazioni[i]) + "\n\n")
+            file.write(str(volontari_associazioni[i]) + ";\n\n")
     # volontari_turni
     file.write('''
     -- volontari_turni
@@ -524,11 +580,16 @@ with open("generation.sql", "w") as file:
             (random.choice(volontari)[0], random.choice(turni)[0])
         )
 
+    for i in range(N):
+        while volontari_turni.count(volontari_turni[i]) > 1:
+            volontari_turni[i] = (random.choice(
+                volontari)[0], random.choice(turni)[0])
+
     for i in range(len(volontari_turni)):
         if i != len(volontari_turni) - 1:
             file.write(str(volontari_turni[i]) + ',\n\t')
         else:
-            file.write(str(volontari_turni[i]) + "\n\n")
+            file.write(str(volontari_turni[i]) + ";\n\n")
 
     # volontari_servizi
     file.write('''
@@ -540,11 +601,17 @@ with open("generation.sql", "w") as file:
             (random.choice(volontari)[0], random.choice(servizi)[0])
         )
 
+    for i in range(N):
+        while volontari_servizi.count(volontari_servizi[i]) > 1:
+            volontari_servizi[i] = (random.choice(
+                volontari)[0], random.choice(servizi)[0])
+
     for i in range(len(volontari_servizi)):
         if i != len(volontari_servizi) - 1:
             file.write(str(volontari_servizi[i]) + ',\n\t')
         else:
-            file.write(str(volontari_servizi[i]) + "\n\n")
+            file.write(str(volontari_servizi[i]) + ";\n\n")
 
+    file.write("END;\n")
 if __name__ == "__main__":
     pass

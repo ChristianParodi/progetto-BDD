@@ -20,7 +20,7 @@ CREATE TABLE clienti (
     cognome VARCHAR(30) NOT NULL,
     data_nascita DATE NOT NULL CHECK(data_nascita <= CURRENT_DATE - INTERVAL '18' YEAR),
     ente_autorizzatore VARCHAR(255) NOT NULL,
-    data_autorizzazione DATE DEFAULT CURRENT_DATE CHECK(data_autorizzazione >= CURRENT_DATE),
+    data_autorizzazione DATE DEFAULT CURRENT_DATE,
     scadenza_autorizzazione DATE NOT NULL, -- da implementare con un trigger data_autorizzazione + 6 mesi
     punti_mensili INT NOT NULL CHECK(punti_mensili BETWEEN 30 AND 60),
     saldo_punti INT NOT NULL CHECK(saldo_punti >= 0),
@@ -102,7 +102,7 @@ CREATE TABLE scarichi (
                      ON UPDATE CASCADE
 );
 
-CREATE TABLE acquisto (
+CREATE TABLE acquisti (
     ID INT PRIMARY KEY,
     importo_speso FLOAT NOT NULL CHECK(importo_speso > 0),
     FOREIGN KEY (ID) REFERENCES ingresso_prodotti(ID)
@@ -126,7 +126,7 @@ CREATE TABLE associazioni (
 
 CREATE TABLE servizi (
     ID SERIAL PRIMARY KEY,
-    nome VARCHAR(255) UNIQUE NOT NULL,
+    nome VARCHAR(255) NOT NULL,
     veicolo VARCHAR(255)
 );
 
@@ -257,7 +257,7 @@ CREATE TABLE volontari_turni (
     FOREIGN KEY (volontario) REFERENCES volontari(ID)
                                    ON DELETE CASCADE
                                    ON UPDATE CASCADE,
-    FOREIGN KEY (turno) REFERENCES associazioni(nome)
+    FOREIGN KEY (turno) REFERENCES turni(ID)
                                    ON DELETE CASCADE
                                    ON UPDATE CASCADE
 );

@@ -1,5 +1,5 @@
 import random
-from unicodedata import digit
+import string
 
 
 def gen_code():
@@ -56,6 +56,19 @@ def gen_p_iva():
     for _ in range(16):
         result += random.choice(digits)
     return result
+
+
+def gen_email(n=1, unique=True):
+    chars = [ch for ch in string.ascii_uppercase + string.ascii_lowercase]
+    result = []
+    for _ in range(n):
+        mail = ""
+        for _ in range(random.randint(3, 60)):
+            mail += random.choice(chars)
+        mail += random.choice(["@gmail.com", "@yahoo.it",
+                               "@hotmail.it", "@libero.it"])
+        result.append(mail)
+    return result if n > 1 else result[0]
 
 
 if __name__ == "__main__":

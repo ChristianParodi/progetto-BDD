@@ -248,7 +248,6 @@ memorizzando per quali servizi un dato volontario e' disponibile (e in quali gio
 
 - `Servizi`
   - 'ID' e' univoco
-  - 'nome' e' univoco
 
 - `Servizi -> trasporti`
   
