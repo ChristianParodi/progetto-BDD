@@ -285,7 +285,7 @@ with open("generation.sql", "w") as file:
     -- acquisti
     INSERT INTO acquisti VALUES\n\t''')
     acquisti = []
-    for i in range(N):
+    for i in range(random.randint(1, N // 2)):
         acquisti.append(
             (random.choice(ingresso_prodotti)[
                 0], random.random() + random.randint(1, 100))
@@ -296,6 +296,7 @@ with open("generation.sql", "w") as file:
             file.write(str(acquisti[i]) + ',\n\t')
         else:
             file.write(str(acquisti[i]) + "\n\n")
+
     # servizi
     file.write('''
     -- servizi
@@ -304,15 +305,23 @@ with open("generation.sql", "w") as file:
     names = [
         'Riordino prodotti',
         'Accoglienza clienti',
-        'Trasporto donazioni',
-        'Stoccaggio prodotti magazzino'
+        'Stoccaggio prodotti magazzino',
+        'Trasporto donazioni'
+    ]
+    veicoli = [
+        "Furgone",
+        "Automobile",
+        "Camion",
     ]
 
-    for i in range(N):
-        name = random.choice(names)
+    for i in range(len(names) - 1):
         servizi.append(
-            (i + 1, name, 'NULL' if name != "Trasporto donazioni" else 'Furgone')
+            (i + 1, names[i], 'NULL')
         )
+
+    servizi.append((4, 'Trasporto donazioni', 'Furgone'))
+    servizi.append((5, 'Trasporto donazioni', 'Automobile'))
+    servizi.append((6, 'Trasporto donazioni', 'Camion'))
 
     for i in range(len(servizi)):
         if i != len(servizi) - 1:
