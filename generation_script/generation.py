@@ -18,7 +18,8 @@ cf = []
 with open("codice_fiscale/codici_fiscali.txt", "r") as cf_file:
     for line in cf_file:
         cf.append(line[:-1])  # togliendo lo \n
-N = 3
+
+N = 800
 '''
     L'idea dietro questo script e' di creare un file SQL in cui, per ogni
     tabella, ci sara' la corrispettiva INSERT con i vari dati fake
@@ -182,26 +183,26 @@ with open("generation.sql", "w") as file:
     -- scorte
     INSERT INTO scorte VALUES\n\t''')
     scorte = [
-        (1, 'Tonno', 'Rio Mare', 6, 200),
-        (2, 'Tonno', 'Insuperabile', 3, 150),
-        (3, 'Tonno', 'Nostromo', 5, 200),
-        (4, 'Shampoo', 'Garnier', 6, 400),
-        (5, 'Shampoo', 'Testanera', 1, 100),
-        (6, 'Shampoo', 'L\'Oreal', 4, 100),
-        (7, 'Pasta', 'De Cecco', 0.89, 200),
-        (8, 'Pasta', 'Barilla', 0.89, 200),
-        (9, 'Pasta', 'Italiamo', 1.24, 100),
-        (10, 'Carne', 'petto di pollo', 5, 500),
-        (11, 'Carne', 'fettina di vitello', 5, 500),
-        (12, 'Carne', 'Braciole di maiale', 7, 500),
-        (13, 'Carne', 'Coppa di maiale', 8, 500),
-        (14, 'Carne', 'Salsicce di maiale', 3, 120),
-        (15, 'Carne', 'Sassicce di vitello', 4, 150),
-        (16, 'Biscotti', 'Batticuori', 3, 200),
-        (17, 'Biscotti', 'Pan di stelle', 3, 55),
-        (18, 'Biscotti', 'Gocciole', 2, 100),
-        (19, 'Deodorante', 'Nivea', 3, 100),
-        (20, 'Deodorante', 'Borotalco', 6, 100)
+        (1, 'Tonno', 'Rio Mare', 6, random.randint(50, 600)),
+        (2, 'Tonno', 'Insuperabile', 3, random.randint(50, 600)),
+        (3, 'Tonno', 'Nostromo', 5, random.randint(50, 600)),
+        (4, 'Shampoo', 'Garnier', 6, random.randint(50, 600)),
+        (5, 'Shampoo', 'Testanera', 1, random.randint(50, 600)),
+        (6, 'Shampoo', 'L\'Oreal', 4, random.randint(50, 600)),
+        (7, 'Pasta', 'De Cecco', 0.89, random.randint(50, 600)),
+        (8, 'Pasta', 'Barilla', 0.89, random.randint(50, 600)),
+        (9, 'Pasta', 'Italiamo', 1.24, random.randint(50, 600)),
+        (10, 'Carne', 'petto di pollo', 5, random.randint(50, 600)),
+        (11, 'Carne', 'fettina di vitello', 5, random.randint(50, 600)),
+        (12, 'Carne', 'Braciole di maiale', 7, random.randint(50, 600)),
+        (13, 'Carne', 'Coppa di maiale', 8, random.randint(50, 600)),
+        (14, 'Carne', 'Salsicce di maiale', 3, random.randint(50, 600)),
+        (15, 'Carne', 'Sassicce di vitello', 4, random.randint(50, 600)),
+        (16, 'Biscotti', 'Batticuori', 3, random.randint(50, 600)),
+        (17, 'Biscotti', 'Pan di stelle', 3, random.randint(50, 600)),
+        (18, 'Biscotti', 'Gocciole', 2, random.randint(50, 600)),
+        (19, 'Deodorante', 'Nivea', 3, random.randint(50, 600)),
+        (20, 'Deodorante', 'Borotalco', 6, random.randint(50, 600))
     ]
 
     for i in range(len(scorte)):
@@ -367,7 +368,7 @@ with open("generation.sql", "w") as file:
     ]
     for i in range(N):
         donatori.append(
-            (i + 1, gen_phone_number, fake.word() +
+            (i + 1, gen_phone_number(), fake.word() +
              "@gmail.com", random.choice(tipologia))
         )
 
@@ -381,7 +382,7 @@ with open("generation.sql", "w") as file:
     -- donatori_privati
     INSERT INTO donatori_privati VALUES\n\t''')
     donatori_privati = []
-    id_privati = [i[0] for i in donatori if i[1] == 'privato']
+    id_privati = [i[0] for i in donatori if i[-1] == 'privato']
 
     for i in range(len(id_privati)):
         donatori_privati.append(
@@ -399,7 +400,7 @@ with open("generation.sql", "w") as file:
     -- donatori_negozi
     INSERT INTO donatori_negozi VALUES\n\t''')
     donatori_negozi = []
-    id_negozi = [i[0] for i in donatori if i[1] == 'negozio']
+    id_negozi = [i[0] for i in donatori if i[-1] == 'negozio']
 
     for i in range(len(id_negozi)):
         donatori_negozi.append(
@@ -416,7 +417,7 @@ with open("generation.sql", "w") as file:
     -- donatori_associazioni
     INSERT INTO donatori_associazioni VALUES\n\t''')
     donatori_associazioni = []
-    id_associazioni = [i[0] for i in donatori if i[1] == 'associazione']
+    id_associazioni = [i[0] for i in donatori if i[-1] == 'associazione']
 
     for i in range(len(id_associazioni)):
         donatori_associazioni.append(
@@ -442,7 +443,7 @@ with open("generation.sql", "w") as file:
 
         donazioni.append(
             (i + 1, current_tipologia, str(fake.date()), str(fake.time()), random.randint(1,
-             2000) if current_tipologia == 'denaro' else 'NULL', 'ID_DONATORE')
+             2000) if current_tipologia == 'denaro' else 'NULL', random.choice(donatori)[0])
         )
 
     for i in range(len(donazioni)):
