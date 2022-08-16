@@ -91,6 +91,8 @@ memorizzando per quali servizi un dato volontario e' disponibile (e in quali gio
     - quale componente del nucleo familiare e' (padre, madre, figlio...)
   - autorizzato: `bool`
     - se e' autorizzato a spendere i punti oppure no
+  - fascia eta': `string`
+    - fascia d'eta' corrispondente ('0 - 5 anni', '6 - 10 anni'...)
 
 - `Volontari`
 
@@ -137,10 +139,8 @@ memorizzando per quali servizi un dato volontario e' disponibile (e in quali gio
   - **ID**: `int`
   - data: `date`
   - ora: `time`
-
-- `Acquisto`
-  - importo_speso: `float`
-    - importo speso per l'acquisto dei prodotti
+  - importo speso: `float`
+    - Nel caso di prodotti acquistati dal market, si memorizza anche la spesa sostenuta
 
 - `Servizi`
   - **ID**: `int`
@@ -317,7 +317,7 @@ memorizzando per quali servizi un dato volontario e' disponibile (e in quali gio
 #### `schema logico`
 
 **Familiari**(\underline{CF}, nome, cognome, data_nascita, autorizzato,
-componente_nucleo, cliente$^{clienti}$)
+componente_nucleo, fascia_eta, cliente$^{clienti}$)
 
 **Clienti**(\underline{ID}, nome, cognome, data_nascita, ente_autorizzatore, data_autorizzazione, scadenza_autorizzazione, punti_mensili, saldo_punti, *CF*, n_componenti_nucleo, autorizzato)
 
@@ -334,8 +334,6 @@ componente_nucleo, cliente$^{clienti}$)
 **Scarichi**(\underline{data, ora}, volontario$^{volontari}_o$)
 
 **Ingresso_prodotti**(\underline{ID}, data, ora)
-
-**Acquisto**(\underline{ID\_ingresso$^{ingresso\_prodotti}$}, importo_speso)
 
 **Volontari**(\underline{ID}, nome, cognome, data_nascita, telefono, email, disponibilita')
 

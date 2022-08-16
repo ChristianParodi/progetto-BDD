@@ -1,19 +1,6 @@
 CREATE SCHEMA IF NOT EXISTS "social_market";
 set search_path to "social_market";
 
-CREATE TABLE familiari (
-    CF CHAR(16) PRIMARY KEY,
-    nome VARCHAR(30) NOT NULL,
-    cognome VARCHAR(30) NOT NULL,
-    data_nascita DATE NOT NULL CHECK(data_nascita < CURRENT_DATE),
-    autorizzato BOOLEAN NOT NULL,
-    componente_nucleo VARCHAR(30) NOT NULL,
-    cliente int NOT NULL,
-    FOREIGN KEY (cliente) REFERENCES clienti(ID)
-                    ON DELETE CASCADE
-                    ON UPDATE CASCADE
-);
-
 CREATE TABLE clienti (
     ID SERIAL PRIMARY KEY,
     nome VARCHAR(30) NOT NULL,
@@ -29,8 +16,23 @@ CREATE TABLE clienti (
     autorizzato BOOLEAN DEFAULT TRUE
 );
 
+CREATE TABLE familiari (
+    CF CHAR(16) PRIMARY KEY,
+    nome VARCHAR(30) NOT NULL,
+    cognome VARCHAR(30) NOT NULL,
+    data_nascita DATE NOT NULL CHECK(data_nascita < CURRENT_DATE),
+    fascia_eta VARCHAR(255) NOT NULL,
+    autorizzato BOOLEAN NOT NULL,
+    componente_nucleo VARCHAR(30) NOT NULL,
+    cliente int NOT NULL,
+    FOREIGN KEY (cliente) REFERENCES clienti(ID)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE
+);
+
+
 CREATE TABLE telefoni (
-    numero INT PRIMARY KEY,
+    numero VARCHAR(20) PRIMARY KEY,
     cliente INT NOT NULL,
     FOREIGN KEY (cliente) REFERENCES clienti(ID)
                     ON DELETE CASCADE
@@ -57,6 +59,43 @@ CREATE TABLE appuntamenti (
     UNIQUE(data, ora)
 );
 
+CREATE TABLE scorte (
+    codice_prodotto SERIAL PRIMARY KEY,
+    tipologia VARCHAR(255) NOT NULL,
+    marca VARCHAR(255) NOT NULL,
+    prezzo FLOAT NOT NULL CHECK(prezzo > 0),
+    qta INT NOT NULL CHECK(qta >= 0),
+    UNIQUE(tipologia, marca)
+);
+
+CREATE TABLE ingresso_prodotti (
+    ID SERIAL PRIMARY KEY,
+    data DATE DEFAULT CURRENT_DATE,
+    ora TIME DEFAULT CURRENT_TIME,
+    importo_speso FLOAT CHECK(importo_speso IS NULL OR importo_speso > 0),
+    UNIQUE(data, ora)
+);
+
+CREATE TABLE volontari (
+    ID SERIAL PRIMARY KEY,
+    nome VARCHAR(30) NOT NULL,
+    cognome VARCHAR(30) NOT NULL,
+    data_nascita DATE NOT NULL CHECK(data_nascita < CURRENT_DATE),
+    telefono VARCHAR(13) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    disponibilita VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE scarichi (
+    data DATE,
+    ora TIME,
+    volontario INT,
+    PRIMARY KEY (data, ora),
+    FOREIGN KEY (volontario) REFERENCES volontari(ID)
+                     ON DELETE NO ACTION
+                     ON UPDATE CASCADE
+);
+
 CREATE TABLE prodotti (
     ID SERIAL PRIMARY KEY,
     scadenza DATE,
@@ -76,49 +115,6 @@ CREATE TABLE prodotti (
                       ON UPDATE CASCADE
 );
 
-CREATE TABLE scorte (
-    codice_prodotto SERIAL PRIMARY KEY,
-    tipologia VARCHAR(255) NOT NULL,
-    marca VARCHAR(255) NOT NULL,
-    prezzo FLOAT NOT NULL CHECK(prezzo > 0),
-    qta INT NOT NULL CHECK(qta >= 0),
-    UNIQUE(tipologia, marca)
-);
-
-CREATE TABLE ingresso_prodotti (
-    ID SERIAL PRIMARY KEY,
-    data DATE DEFAULT CURRENT_DATE,
-    ora TIME DEFAULT CURRENT_TIME,
-    UNIQUE(data, ora)
-);
-
-CREATE TABLE scarichi (
-    data DATE,
-    ora TIME,
-    volontario INT,
-    PRIMARY KEY (data, ora),
-    FOREIGN KEY (volontario) REFERENCES volontari(ID)
-                     ON DELETE NO ACTION
-                     ON UPDATE CASCADE
-);
-
-CREATE TABLE acquisti (
-    ID INT PRIMARY KEY,
-    importo_speso FLOAT NOT NULL CHECK(importo_speso > 0),
-    FOREIGN KEY (ID) REFERENCES ingresso_prodotti(ID)
-                      ON DELETE CASCADE
-                      ON UPDATE CASCADE
-);
-
-CREATE TABLE volontari (
-    ID SERIAL PRIMARY KEY,
-    nome VARCHAR(30) NOT NULL,
-    cognome VARCHAR(30) NOT NULL,
-    data_nascita DATE NOT NULL CHECK(data_nascita < CURRENT_DATE),
-    telefono VARCHAR(13) UNIQUE NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    disponibilita VARCHAR(255) NOT NULL
-);
 
 CREATE TABLE associazioni (
     nome VARCHAR(255) PRIMARY KEY
@@ -150,40 +146,6 @@ CREATE TABLE turni_trasporti (
     FOREIGN KEY (volontario) REFERENCES volontari(ID)
                              ON DELETE NO ACTION
                              ON UPDATE CASCADE
-);
-
-CREATE TABLE donazioni (
-    ID SERIAL PRIMARY KEY,
-    tipologia VARCHAR(255) NOT NULL CHECK(tipologia IN ('denaro', 'prodotti')),
-    data DATE DEFAULT CURRENT_DATE,
-    ora TIME DEFAULT CURRENT_TIME,
-    importo FLOAT,
-    donatore INT NOT NULL,
-    UNIQUE(data, ora),
-    FOREIGN KEY (donatore) REFERENCES donatori(ID)
-                       ON DELETE NO ACTION
-                       ON UPDATE CASCADE
-);
-
-CREATE TABLE donazioni_prodotti (
-    ID INT PRIMARY KEY,
-    consegnatario_privato INT,
-    ID_turno_consegna INT,
-    ID_ingresso INT NOT NULL,
-    FOREIGN KEY (ID) REFERENCES donazioni(ID)
-                                ON DELETE CASCADE
-                                ON UPDATE CASCADE,
-    FOREIGN KEY (consegnatario_privato) REFERENCES donatori_privati(ID)
-                                ON DELETE CASCADE
-                                ON UPDATE CASCADE,
-    FOREIGN KEY (ID_turno_consegna) REFERENCES turni_trasporti(ID)
-                                ON DELETE SET NULL
-                                ON UPDATE CASCADE,
-    FOREIGN KEY (ID_ingresso) REFERENCES ingresso_prodotti(ID)
-                                ON DELETE CASCADE
-                                ON UPDATE CASCADE,
-    CHECK((consegnatario_privato IS NULL AND ID_turno_consegna IS NOT NULL)
-              OR (consegnatario_privato IS NOT NULL AND ID_turno_consegna IS NULL))
 );
 
 CREATE TABLE donatori (
@@ -221,6 +183,41 @@ CREATE TABLE donatori_associazioni(
                               ON DELETE CASCADE
                               ON UPDATE CASCADE
 );
+
+CREATE TABLE donazioni (
+    ID SERIAL PRIMARY KEY,
+    tipologia VARCHAR(255) NOT NULL CHECK(tipologia IN ('denaro', 'prodotti')),
+    data DATE DEFAULT CURRENT_DATE,
+    ora TIME DEFAULT CURRENT_TIME,
+    importo FLOAT,
+    donatore INT NOT NULL,
+    UNIQUE(data, ora),
+    FOREIGN KEY (donatore) REFERENCES donatori(ID)
+                       ON DELETE NO ACTION
+                       ON UPDATE CASCADE
+);
+
+CREATE TABLE donazioni_prodotti (
+    ID INT PRIMARY KEY,
+    consegnatario_privato INT,
+    ID_turno_consegna INT,
+    ID_ingresso INT NOT NULL,
+    FOREIGN KEY (ID) REFERENCES donazioni(ID)
+                                ON DELETE CASCADE
+                                ON UPDATE CASCADE,
+    FOREIGN KEY (consegnatario_privato) REFERENCES donatori_privati(ID)
+                                ON DELETE CASCADE
+                                ON UPDATE CASCADE,
+    FOREIGN KEY (ID_turno_consegna) REFERENCES turni_trasporti(ID)
+                                ON DELETE SET NULL
+                                ON UPDATE CASCADE,
+    FOREIGN KEY (ID_ingresso) REFERENCES ingresso_prodotti(ID)
+                                ON DELETE CASCADE
+                                ON UPDATE CASCADE,
+    CHECK((consegnatario_privato IS NULL AND ID_turno_consegna IS NOT NULL)
+              OR (consegnatario_privato IS NOT NULL AND ID_turno_consegna IS NULL))
+);
+
 
 -- associazioni (n, n)
 
