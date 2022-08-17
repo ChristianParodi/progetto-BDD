@@ -47,18 +47,6 @@ CREATE TABLE email (
                     ON UPDATE CASCADE
 );
 
-CREATE TABLE appuntamenti (
-    ID SERIAL PRIMARY KEY,
-    data DATE NOT NULL,
-    ora TIME NOT NULL,
-    componente_nucleo VARCHAR(30) NOT NULL,
-    saldo_iniziale INT NOT NULL CHECK(saldo_iniziale > 0),
-    saldo_finale INT NOT NULL CHECK(saldo_finale < saldo_iniziale),
-    cliente INT NOT NULL,
-    volontario INT NOT NULL,
-    UNIQUE(data, ora)
-);
-
 CREATE TABLE scorte (
     codice_prodotto SERIAL PRIMARY KEY,
     tipologia VARCHAR(255) NOT NULL,
@@ -84,6 +72,24 @@ CREATE TABLE volontari (
     telefono VARCHAR(13) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     disponibilita VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE appuntamenti (
+    ID SERIAL PRIMARY KEY,
+    data DATE NOT NULL,
+    ora TIME NOT NULL,
+    componente_nucleo VARCHAR(30) NOT NULL,
+    saldo_iniziale INT NOT NULL CHECK(saldo_iniziale > 0),
+    saldo_finale INT NOT NULL CHECK(saldo_finale < saldo_iniziale),
+    cliente INT NOT NULL,
+    volontario INT NOT NULL,
+    UNIQUE(data, ora),
+    FOREIGN KEY (cliente) REFERENCES clienti(ID)
+                    ON DELETE CASCADE
+                    ON UPDATE CASCADE,
+    FOREIGN KEY (volontario) REFERENCES volontari(ID)
+                    ON DELETE RESTRICT
+                    ON UPDATE CASCADE
 );
 
 CREATE TABLE scarichi (
@@ -225,6 +231,7 @@ CREATE TABLE appuntamenti_prodotti (
     prodotto INT,
     appuntamento INT,
     PRIMARY KEY(prodotto, appuntamento),
+    UNIQUE(prodotto),
     FOREIGN KEY (prodotto) REFERENCES prodotti(ID)
                                    ON DELETE NO ACTION
                                    ON UPDATE CASCADE,
@@ -270,3 +277,41 @@ CREATE TABLE volontari_servizi (
                                    ON DELETE CASCADE
                                    ON UPDATE CASCADE
 );
+
+-- TRIGGER
+
+-- aggiornamento della quantita' in inventario quando viene comprato un prodotto,
+-- cioe' quando viene inserita una tupla su appuntamenti_prodotti (cioe' viene comprata)
+-- e quanto vengono inserite tuple in prodotti (cioe' vengono aggiunti all'inventario)
+
+-- Evento: INSERT
+-- condizione: sempre
+-- azione: incrementa qta di 1
+
+-- Ad ogni inserimento in prodotti, aggiungi la quantita' a scorte
+CREATE OR REPLACE FUNCTION addQta() RETURNS TRIGGER AS
+$add_qta$
+    BEGIN
+       UPDATE scorte SET qta = qta + 1 WHERE codice_prodotto = NEW.codice_prodotto;
+       RETURN NULL;
+    END;
+$add_qta$ LANGUAGE plpgsql;
+
+CREATE TRIGGER add_qta
+AFTER INSERT ON prodotti
+FOR EACH ROW EXECUTE FUNCTION addQta();
+
+-- ad ogni inserimento in appuntamenti_prodotti, togli la quantita' in scorte
+CREATE OR REPLACE FUNCTION subQta() RETURNS TRIGGER AS 
+$sub_qta$
+    BEGIN
+        DECLARE 
+            id_scorta INT;
+        SELECT codice_prodotto FROM prodotti WHERE ID = NEW.prodotto INTO id_scorta;
+        UPDATE scorte SET qta = qta - 1 WHERE codice_prodotto = id_scorta;
+        RETURN NULL;
+    END;
+$sub_qta$
+
+-- insert into appuntamenti values (1, '2022-08-17', '10:00:00', 1, 1)
+-- insert into appuntamenti_prodotti values (1, 1), (1, 2)
