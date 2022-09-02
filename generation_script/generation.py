@@ -551,9 +551,10 @@ with open("generation.sql", "w") as file:
     -- appuntamenti_prodotti
     INSERT INTO appuntamenti_prodotti VALUES\n\t''')
     appuntamenti_prodotti = []
+    id_prodotto = [prodotti[i][0] for i in range(len(prodotti)//2)]
     for i in range(N):
         appuntamenti_prodotti.append(
-            (random.choice(prodotti)[0], random.choice(appuntamenti)[0])
+            (id_prodotto[i], random.choice(appuntamenti)[0])
         )
 
     for i in range(N):

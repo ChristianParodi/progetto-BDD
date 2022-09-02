@@ -302,16 +302,20 @@ AFTER INSERT ON prodotti
 FOR EACH ROW EXECUTE FUNCTION addQta();
 
 -- ad ogni inserimento in appuntamenti_prodotti, togli la quantita' in scorte
-CREATE OR REPLACE FUNCTION subQta() RETURNS TRIGGER AS 
+CREATE OR REPLACE FUNCTION subQta() RETURNS TRIGGER AS
 $sub_qta$
+    DECLARE
+           cod_prodotto INT;
     BEGIN
-        DECLARE 
-            id_scorta INT;
-        SELECT codice_prodotto FROM prodotti WHERE ID = NEW.prodotto INTO id_scorta;
-        UPDATE scorte SET qta = qta - 1 WHERE codice_prodotto = id_scorta;
+        cod_prodotto := (SELECT codice_prodotto FROM prodotti WHERE id = NEW.id);
+        UPDATE scorte SET qta = qta - 1 WHERE codice_prodotto = cod_prodotto;
         RETURN NULL;
     END;
-$sub_qta$
+$sub_qta$ LANGUAGE plpgsql;
+
+CREATE TRIGGER sub_qta
+AFTER INSERT ON appuntamenti_prodotti
+FOR EACH ROW EXECUTE FUNCTION subQta();
 
 -- insert into appuntamenti values (1, '2022-08-17', '10:00:00', 1, 1)
 -- insert into appuntamenti_prodotti values (1, 1), (1, 2)

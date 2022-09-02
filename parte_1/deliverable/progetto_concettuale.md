@@ -248,6 +248,7 @@ memorizzando per quali servizi un dato volontario e' disponibile (e in quali gio
 
 - `Servizi`
   - 'ID' e' univoco
+  - il nome del servizio e' univoco
 
 - `Servizi -> trasporti`
   
@@ -313,6 +314,26 @@ memorizzando per quali servizi un dato volontario e' disponibile (e in quali gio
 - `Donatori`
   
   In questo caso per tutti e 3 i figli abbiamo associato una tabella aggiuntiva perche', anche se alcune non sono associate con niente, ci sembra piu' comodo avere memorizzati dati cosi' diversi in tabelle diverse.
+
+#### `modifiche effettuate prima della traduzione`
+
+##### `Turni e servizi`
+
+Ristrutturando abbiamo notato due particolarita' dello schema ER che ci fanno storcere il naso riguardo ai `turni` e i `servizi`, ovvero:
+
+- Non sappiamo a che servizio corrisponde un dato turno (sappiamo solo se e' un turno di trasporti ma non sappiamo con quale veicolo e' effettuato)
+- Il veicolo viene (eventualmente) salvato in `servizi`, quindi potremmo solamente memorizzare come informazione che il servizio trasporti
+  viene eseguito sempre con lo stesso veicolo.
+
+Per risolvere questi problemi, e' bastato associare `turni` e `servizio` (`turno` 'e' di' `servizio`), cosi' facendo viene fuori una relazione (1, n) (dal lato di turno), avendo cosi' come chiave eseterna in turni l'ID del servizio che si sta svolgendo. Viene anche spostato il vicolo nel turno, in modo che sia collegato al singolo turno e che possano quindi essere memorizzati veicoli diversi in turni diversi.
+
+##### `Fasce orarie di disponibilita' dei volontari`
+
+Inizialmente abbiamo pensato di semplicemente scrivere le fasce orarie per ogni volontario come stringa, pero' questa soluzione implica che il volontario sia disponibile in una sola fascia oraria ('giovedi dalle 15 alle 17') oppure scrivere una stringa piu' lunga scrivendo le varie disponilita' separate da virgole, con cui pero' sarebbe stato difficile lavorare. Ci sembra ragionevole ristrutturare quindi l'attributo "disponibilita'" in una tabella aggiuntiva "fasce_orarie" con un ID come chiave, cosi' da poter associare piu' fasce orarie ai singoli volontari e da poter controllare piu' facilmente, per esempio, che un volontario non abbia un turno assegnato in un orario in cui non e' disponibile.
+
+##### `familiari e appuntamenti`
+
+Per come lo abbiamo ora, il nostro database ci permette di memorizzare solamente gli appuntamenti a cui ha partecipato un cliente, ma non i suoi familiari. Siccome memorizziamo se un familiare e' autorizzato o meno ad accedere al market, e' ragionevole possa quindi partecipare agli appuntamenti. Quindi aggiungiamo un'ulteriore associazione `Familiari` 'partecipa a' `Appuntamenti`, con cardinalita' (1, n) dal lato di appuntamenti, risultandone una chiave esterna in appuntamenti. Notiamo che questa chiave esterna e' pero' opzionale, mentre invece la chiave esterna "cliente" in appuntamenti la manterremo (per poter memorizzare quale autorizzazione il familiare ha usato).
 
 #### `schema logico`
 
