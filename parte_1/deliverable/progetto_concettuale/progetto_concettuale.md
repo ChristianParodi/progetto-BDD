@@ -47,7 +47,7 @@ memorizzando per quali servizi un dato volontario e' disponibile (e in quali gio
 
 ## `Progetto concettuale`
 
-![Diagramma ER](media/social_market_v2.drawio.png)
+![Diagramma ER](../media/social_market_v2.drawio.png)
 
 \newpage
 
@@ -287,16 +287,16 @@ memorizzando per quali servizi un dato volontario e' disponibile (e in quali gio
 
 ### `gerarchie di generalizzazione`
 
-|padre|figlio/i|tipo|
-|---------|-|----|
-|'Servizi' |'Servizio trasporti'| parziale/esclusivo|
-|'Turni'| 'Turno trasporti'|parziale/esclusivo|
-|'Donazioni'| 'denaro', 'prodotti'|totale/esclusivo|
-|'Donatori'| 'privati', 'negozi', 'associazioni'|totale/esclusivo|
+| padre       | figlio/i                            | tipo               |
+| ----------- | ----------------------------------- | ------------------ |
+| 'Servizi'   | 'Servizio trasporti'                | parziale/esclusivo |
+| 'Turni'     | 'Turno trasporti'                   | parziale/esclusivo |
+| 'Donazioni' | 'denaro', 'prodotti'                | totale/esclusivo   |
+| 'Donatori'  | 'privati', 'negozi', 'associazioni' | totale/esclusivo   |
 
 # `Schema logico`
 
-![Diagramma ER ristrutturato](media/social_market_v2_ristrutturato.drawio.png){width=98%}
+![Diagramma ER ristrutturato](../media/social_market_v2_ristrutturato.drawio.png){width=98%}
 
 \newpage
 
