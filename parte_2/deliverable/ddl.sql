@@ -317,5 +317,19 @@ CREATE TRIGGER sub_qta
 AFTER INSERT ON appuntamenti_prodotti
 FOR EACH ROW EXECUTE FUNCTION subQta();
 
--- insert into appuntamenti values (1, '2022-08-17', '10:00:00', 1, 1)
--- insert into appuntamenti_prodotti values (1, 1), (1, 2)
+
+-- Trigger che gestisce l'inserimento di appuntamenti
+-- Ogni appuntamento dura 15 minuti e si distanzia dagli altri di 5 minuti
+CREATE OR REPLACE FUNCTION checkAppointments() RETURNS TRIGGER AS
+$check_app$
+    IF EXISTS 
+        (SELECT * FROM appuntamenti WHERE ora >= NEW.ora - '20 minutes'::interval OR ora <= NEW.ora + '20 minutes'::interval)
+    THEN
+        RAISE EXCEPTION "L'appuntamento non puo' essere inserito durante altri appuntamenti"; 
+    END IF;
+    RETURN NEW;
+$check_app$ LANGUAGE plpgsql;
+
+CREATE TRIGGER checkApts()
+BEFORE INSERT ON appuntamenti
+FOR EACH ROW EXECUTE FUNCTION checkAppointments();
