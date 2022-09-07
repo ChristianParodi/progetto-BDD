@@ -45,11 +45,13 @@ with open("generation.sql", "w") as file:
         date_auth = str(date_auth)
         scad_auth = str(scad_auth)
 
+        punti_mensili = random.choice([i for i in range(30, 61)])
+        saldo_punti = random.choice([i for i in range(0, punti_mensili + 1)])
+
         clienti.append(
             (i + 1, fake.first_name(), fake.last_name(), str(fake.date_of_birth(
                 minimum_age=18, maximum_age=60)), random.choice(enti), date_auth, scad_auth,
-             random.choice([i for i in range(30, 61)]), random.choice(
-                [i for i in range(30, 61)]), current_cf, random.randint(1, 10), 'true')
+             punti_mensili, saldo_punti, current_cf, random.randint(1, 10), 'true')
         )
 
     for i in range(len(clienti)):
@@ -156,40 +158,10 @@ with open("generation.sql", "w") as file:
     -- volontari
     INSERT INTO volontari VALUES\n\t''')
     volontari = []
-    disponibilita = [
-        "lunedi dalle 9 alle 21",
-        "lunedi dalle 10 alle 15",
-        "lunedi dalle 17 alle 21",
-        "lunedi dalle 15 alle 17",
-        "martedi dalle 9 alle 21",
-        "martedi dalle 10 alle 15",
-        "martedi dalle 17 alle 21",
-        "martedi dalle 15 alle 17",
-        "mercoledi dalle 9 alle 21",
-        "mercoledi dalle 10 alle 15",
-        "mercoledi dalle 17 alle 21",
-        "mercoledi dalle 15 alle 17",
-        "giovedi dalle 9 alle 21",
-        "giovedi dalle 10 alle 15",
-        "giovedi dalle 17 alle 21",
-        "giovedi dalle 15 alle 17",
-        "venerdi dalle 9 alle 21",
-        "venerdi dalle 10 alle 15",
-        "venerdi dalle 17 alle 21",
-        "venerdi dalle 15 alle 17",
-        "sabato dalle 9 alle 21",
-        "sabato dalle 10 alle 15",
-        "sabato dalle 17 alle 21",
-        "sabato dalle 15 alle 17",
-        "domenica dalle 9 alle 21",
-        "domenica dalle 10 alle 15",
-        "domenica dalle 17 alle 21",
-        "domenica dalle 15 alle 17",
-    ]
     for i in range(N):
         volontari.append(
             (i + 1, fake.first_name(), fake.last_name(), str(fake.date_of_birth(maximum_age=70)),
-             gen_phone_number(), gen_email(), random.choice(disponibilita))
+             gen_phone_number(), gen_email())
         )
 
     for i in range(len(volontari)):
@@ -197,6 +169,40 @@ with open("generation.sql", "w") as file:
             file.write(str(volontari[i]) + ',\n\t')
         else:
             file.write(str(volontari[i]) + ";\n\n")
+
+    # fasce orarie
+    file.write('''
+    -- fasce orarie
+    INSERT INTO fasce_orarie VALUES\n\t''')
+    disponibilita = [
+        ("lunedì", "08:00:00", "12:00:00"),
+        ("lunedì", "12:00:00", "18:00:00"),
+        ("martedì", "08:00:00", "12:00:00"),
+        ("martedì", "12:00:00", "18:00:00"),
+        ("mercoledì", "08:00:00", "12:00:00"),
+        ("mercoledì", "12:00:00", "18:00:00"),
+        ("giovedì", "08:00:00", "12:00:00"),
+        ("giovedì", "12:00:00", "18:00:00"),
+        ("venerdì", "08:00:00", "12:00:00"),
+        ("venerdì", "12:00:00", "18:00:00"),
+        ("sabato", "08:00:00", "12:00:00"),
+        ("sabato", "12:00:00", "18:00:00"),
+        ("domenica", "08:00:00", "12:00:00"),
+        ("domenica", "12:00:00", "18:00:00"),
+    ]
+    fasce_orarie = []
+
+    for i in range(len(disponibilita)):
+        fasce_orarie.append(
+            (i + 1, disponibilita[i][0],
+             disponibilita[i][1], disponibilita[i][2])
+        )
+
+    for i in range(len(fasce_orarie)):
+        if i != len(fasce_orarie) - 1:
+            file.write(str(fasce_orarie[i]) + ',\n\t')
+        else:
+            file.write(str(fasce_orarie[i]) + ";\n\n")
 
     # appuntamenti
     file.write('''
@@ -361,20 +367,11 @@ with open("generation.sql", "w") as file:
         'Stoccaggio prodotti magazzino',
         'Trasporto donazioni'
     ]
-    veicoli = [
-        "Furgone",
-        "Automobile",
-        "Camion",
-    ]
 
     for i in range(len(names) - 1):
         servizi.append(
-            (i + 1, names[i], 'NULL')
+            (i + 1, names[i])
         )
-
-    servizi.append((4, 'Trasporto donazioni', 'Furgone'))
-    servizi.append((5, 'Trasporto donazioni', 'Automobile'))
-    servizi.append((6, 'Trasporto donazioni', 'Camion'))
 
     for i in range(len(servizi)):
         if i != len(servizi) - 1:
@@ -412,12 +409,18 @@ with open("generation.sql", "w") as file:
         while id_turni.count(id_turni[i]) > 1:
             id_turni[i] = random.choice(turni_trasporti)[0]
 
+    veicoli = [
+        "Furgone",
+        "Automobile",
+        "Camion",
+    ]
+
     for i in range(N):
         ora = fake.time()
 
         turni_trasporti.append(
             (id_turni[i], random.choice(volontari)[
-             0], str(ora), random.randint(1, 10), fake.company())
+             0], str(ora), random.randint(1, 10), fake.company(), random.choice(veicoli))
         )
 
     for i in range(len(turni_trasporti)):
@@ -628,6 +631,28 @@ with open("generation.sql", "w") as file:
             file.write(str(volontari_servizi[i]) + ',\n\t')
         else:
             file.write(str(volontari_servizi[i]) + ";\n\n")
+
+    # volontari_fasce_orarie
+    # volontari_servizi
+    file.write('''
+    -- volontari_fasce_orarie
+    INSERT INTO volontari_fasce_orarie VALUES\n\t''')
+    volontari_fasce_orarie = []
+    for i in range(N):
+        volontari_fasce_orarie.append(
+            (random.choice(volontari)[0], random.choice(fasce_orarie)[0])
+        )
+
+    for i in range(N):
+        while volontari_fasce_orarie.count(volontari_fasce_orarie[i]) > 1:
+            volontari_fasce_orarie[i] = (random.choice(
+                volontari)[0], random.choice(fasce_orarie)[0])
+
+    for i in range(len(volontari_fasce_orarie)):
+        if i != len(volontari_fasce_orarie) - 1:
+            file.write(str(volontari_fasce_orarie[i]) + ',\n\t')
+        else:
+            file.write(str(volontari_fasce_orarie[i]) + ";\n\n")
 
     file.write("END;\n")
 if __name__ == "__main__":

@@ -152,6 +152,7 @@ CREATE TABLE turni_trasporti (
     ora TIME NOT NULL,
     n_colli INT CHECK(n_colli > 0),
     sede_ritiro VARCHAR(255) NOT NULL,
+    veicolo varchar(255) NOT NULL,
     FOREIGN KEY (ID) REFERENCES turni(ID)
                              ON DELETE CASCADE
                              ON UPDATE CASCADE,
