@@ -227,10 +227,15 @@ with open("generation.sql", "w") as file:
     for i in range(N):
         saldo_iniziale = random.choice([i for i in range(30, 61)])
         saldo_finale = random.choice([i for i in range(saldo_iniziale)])
+        cliente = random.choice(clienti)[0]
+        current_familiari = [j[0]
+                             for j in familiari if familiari[-1] == cliente]
+        current_familiari.append("NULL")
+        familiare = random.choice(current_familiari)
 
         appuntamenti.append(
             (i + 1, str(date_times[i]).split()[0], str(date_times[i]).split()[1], fake.word(), saldo_iniziale,
-             saldo_finale, random.choice(clienti)[0], random.choice(volontari)[0])
+             saldo_finale, cliente, random.choice(volontari)[0], familiare)
         )
 
     for i in range(len(appuntamenti)):

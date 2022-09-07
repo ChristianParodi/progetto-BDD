@@ -90,13 +90,15 @@ CREATE TABLE appuntamenti (
     saldo_finale INT NOT NULL CHECK(saldo_finale < saldo_iniziale),
     cliente INT NOT NULL,
     volontario INT NOT NULL,
+    familiare CHAR(16),
     UNIQUE(data, ora),
     FOREIGN KEY (cliente) REFERENCES clienti(ID)
                     ON DELETE CASCADE
                     ON UPDATE CASCADE,
     FOREIGN KEY (volontario) REFERENCES volontari(ID)
                     ON DELETE RESTRICT
-                    ON UPDATE CASCADE
+                    ON UPDATE CASCADE,
+    FOREIGN KEY (familiare) REFERENCES familairi(CF)
 );
 
 CREATE TABLE scarichi (
