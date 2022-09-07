@@ -70,8 +70,15 @@ CREATE TABLE volontari (
     cognome VARCHAR(30) NOT NULL,
     data_nascita DATE NOT NULL CHECK(data_nascita < CURRENT_DATE),
     telefono VARCHAR(13) UNIQUE NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    disponibilita VARCHAR(255) NOT NULL
+    email VARCHAR(255) UNIQUE NOT NULL
+);
+
+CREATE TABLE fasce_orarie (
+    ID SERIAL PRIMARY KEY,
+    giorno varchar(40) NOT NULL,
+    ora_inizio TIME NOT NULL,
+    ora_fine TIME NOT NULL,
+    UNIQUE(giorno, ora_inizio, ora_fine)
 );
 
 CREATE TABLE appuntamenti (
@@ -128,8 +135,7 @@ CREATE TABLE associazioni (
 
 CREATE TABLE servizi (
     ID SERIAL PRIMARY KEY,
-    nome VARCHAR(255) NOT NULL,
-    veicolo VARCHAR(255)
+    nome VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE turni (
@@ -276,6 +282,18 @@ CREATE TABLE volontari_servizi (
     FOREIGN KEY (servizio) REFERENCES servizi(ID)
                                    ON DELETE CASCADE
                                    ON UPDATE CASCADE
+);
+
+CREATE TABLE volontari_fasce_orarie (
+    volontario INT,
+    fascia_oraria INT,
+    PRIMARY KEY (volontario, fascia_oraria),
+    FOREIGN KEY(volontario) REFERENCES volontari(ID)
+                                    ON DELETE CASCADE
+                                    ON UPDATE CASCADE,
+    FOREIGN KEY (fascia_oraria) REFERENCES fasce_orarie(ID)
+                                    ON DELETE CASCADE
+                                    ON UPDATE CASCADE
 );
 
 -- TRIGGER

@@ -364,17 +364,17 @@ componente_nucleo, fascia_eta, cliente$^{clienti}$)
 
 **Ingresso_prodotti**(\underline{ID}, data, ora)
 
-**Volontari**(\underline{ID}, nome, cognome, data_nascita, telefono, email, disponibilita')
+**Volontari**(\underline{ID}, nome, cognome, data_nascita, telefono, email)
 
 **Fasce_orarie**(\underline{ID}, giorno, ora_inizio, ora_fine)
 
 **Associazioni**(\underline{nome})
 
-**Servizi**(\underline{ID}, nome, veicolo$_o$)
+**Servizi**(\underline{ID}, nome)
 
 **Turni**(\underline{ID}, data, ora_inizio, ora_fine, servizio$^{servizi}$)
 
-**Turno_trasporti**(\underline{ID$^{turni}$}, volontario$^{volontario}$ ,ora, n_colli, sede_ritiro)
+**Turno_trasporti**(\underline{ID$^{turni}$}, volontario$^{volontario}$ ,ora, n_colli, veicolo, sede_ritiro)
 
 **Donazioni**(\underline{ID}, tipologia, data, ora, importo$_o$ donatore$^{donatori}$)
 
