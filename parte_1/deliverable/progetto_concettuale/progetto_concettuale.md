@@ -110,6 +110,11 @@ memorizzando per quali servizi un dato volontario e' disponibile (e in quali gio
   - associazione: `string`
     - l'eventuale associazione/i a cui il volontario e' collegato
 
+- `Fasce orarie`
+  - **ID**: `string`
+  - giorno: `string`
+  - fascia oraria: `string`
+
 - `Prodotti`
 
   - **ID**: `int`
@@ -240,6 +245,9 @@ memorizzando per quali servizi un dato volontario e' disponibile (e in quali gio
   - telefono deve essere univoco
   - email deve essere univoca
 
+- `Fasce orarie`
+  - giorno e fascia oraria sono unique insieme
+
 - `Turni`
   - 'ID' e' univoco
 
@@ -346,7 +354,7 @@ componente_nucleo, fascia_eta, cliente$^{clienti}$)
 
 **Email**(\underline{indirizzo}, cliente$^{clienti}$)
 
-**Appuntamenti**(\underline{ID}, data, ora, componente_nucleo, saldo_iniziale, saldo_finale, cliente$^{clienti}$, volontario$^{volontari}$)
+**Appuntamenti**(\underline{ID}, data, ora, componente_nucleo, saldo_iniziale, saldo_finale, cliente$^{clienti}$, volontario$^{volontari}$, familiare$^{familiari}_O$)
 
 **Prodotti**(\underline{ID}, scadenza$_o$, scadenza_reale$_o$, codice_prodotto$^{scorte}$, ID_ingresso$^{ingresso\_prodotti}$, data_scarico$^{scarichi}_o$, ora_scarico$^{scarichi}_o$)
 
@@ -358,11 +366,13 @@ componente_nucleo, fascia_eta, cliente$^{clienti}$)
 
 **Volontari**(\underline{ID}, nome, cognome, data_nascita, telefono, email, disponibilita')
 
+**Fasce_orarie**(\underline{ID}, giorno, ora_inizio, ora_fine)
+
 **Associazioni**(\underline{nome})
 
 **Servizi**(\underline{ID}, nome, veicolo$_o$)
 
-**Turni**(\underline{ID}, data, ora_inizio, ora_fine)
+**Turni**(\underline{ID}, data, ora_inizio, ora_fine, servizio$^{servizi}$)
 
 **Turno_trasporti**(\underline{ID$^{turni}$}, volontario$^{volontario}$ ,ora, n_colli, sede_ritiro)
 
@@ -387,6 +397,8 @@ componente_nucleo, fascia_eta, cliente$^{clienti}$)
 **volontari_turni**(\underline{volontario$^{volontari}$, turno$^{turni}$})
 
 **volontari_servizi**(\underline{volontario$^{volontari}$, servizio$^{servizi}$})
+
+**volontari_fasce_orarie**(\underline{volontario$^{volontari}$, fascia\_oraria$^{fasce\_orarie}$})
 
 ## `Normalizzazione`
 
@@ -416,6 +428,8 @@ Per verificare la qualita' dello schema ER ristrutturato e' bene controllare che
   - $ID \to nome, cognome, data\_nascita, telefono, email, disponibilita'$
   - $telefono \to ID$
   - $email \to ID$
+- Fasce orarie
+  - $ID \to giorno, ora_inizio, ora_fine$
 - Servizi
   - $ID \to nome, veicolo$
 - Turni

@@ -22,6 +22,7 @@ CREATE OR REPLACE VIEW autorizzati_nucleo AS
     WHERE autorizzato
     GROUP BY id_cliente;
 
+-- numero di componenti familiari appartenenti alla fascia d'eta' piu' bassa
 CREATE OR REPLACE VIEW fascia_eta_piu_bassa AS
     SELECT clienti.id as id_cliente, COUNT(fam) as n_appartenenti
     FROM (SELECT * FROM familiari WHERE fascia_eta = '0-5 anni') as fam
@@ -29,6 +30,7 @@ CREATE OR REPLACE VIEW fascia_eta_piu_bassa AS
     group by clienti.id
 order by clienti.id;
 
+-- numero di prodotti acquistati nell'ultimo anno
 CREATE VIEW n_spese_ultimo_anno AS
     SELECT clienti.id as id_cliente, COUNT(p) as n_acquisti
     FROM clienti
