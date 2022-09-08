@@ -336,7 +336,7 @@ with open("generation.sql", "w") as file:
             prodotti.append(
                 (k, str(scad), str(real_scad), scorte[i][0],
                  random.choice(ingresso_prodotti)[0], scarico[0], scarico[1],
-                 'true' if scarico[0] <= date.today() else 'false')
+                 'true' if datetime.strptime(scarico[0], "%Y-%m-%d").date() <= date.today() else 'false')
             )
             k += 1
 

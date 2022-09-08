@@ -28,28 +28,33 @@ CREATE TRIGGER sub_qta
 AFTER INSERT ON appuntamenti_prodotti
 FOR EACH ROW EXECUTE FUNCTION subQta();
 
--- Verifica del vincolo che ogni volontario non si assegnato a piu' attivita'
--- contemporaneamente
-
 CREATE OR REPLACE FUNCTION checkTurniVol() RETURNS TRIGGER AS
 $check_turni_volontari$
     DECLARE
         volTurni turni;
+        newTurno turni;
+        -- Tutti i turni che sono nella stessa data del turno che si vuole inserire (escluso)
         cur CURSOR FOR
             SELECT *
             FROM turni
-            WHERE id = NEW.turno and data = ANY (
+            WHERE data = (
                 SELECT data
                 FROM turni
                 WHERE id = NEW.turno
-            );
+            ) AND id <> NEW.turno;
     BEGIN
         OPEN cur;
         FETCH cur INTO volTurni;
 
+        -- Il turno che si vuole assegnare al volontario
+        SELECT *
+        FROM turni
+        WHERE id = NEW.turno
+        INTO newTurno;
+
         WHILE FOUND LOOP
             BEGIN
-                IF (NEW.ora_inizio, NEW.ora_fine) OVERLAPS (volTurni.ora_inizio, volTurni.ora_fine)
+                IF (currentTurno.ora_inizio, currentTurno.ora_fine) OVERLAPS (volTurni.ora_inizio, volTurni.ora_fine)
                 THEN
                     RAISE NOTICE 'Errore: il turno da inserire si sovrappone al turno (%, %, %)', volTurni.data, volTurni.ora_inizio, volTurni.ora_fine;
                     RETURN NULL;

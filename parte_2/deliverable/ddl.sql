@@ -98,7 +98,7 @@ CREATE TABLE appuntamenti (
     FOREIGN KEY (volontario) REFERENCES volontari(ID)
                     ON DELETE RESTRICT
                     ON UPDATE CASCADE,
-    FOREIGN KEY (familiare) REFERENCES familairi(CF)
+    FOREIGN KEY (familiare) REFERENCES familiari(CF)
 );
 
 CREATE TABLE scarichi (
@@ -339,19 +339,39 @@ CREATE TRIGGER sub_qta
 AFTER INSERT ON appuntamenti_prodotti
 FOR EACH ROW EXECUTE FUNCTION subQta();
 
+-- Verifica del vincolo che ogni volontario non si assegnato a piu' attivita'
+-- contemporaneamente
 
--- Trigger che gestisce l'inserimento di appuntamenti
--- Ogni appuntamento dura 15 minuti e si distanzia dagli altri di 5 minuti
-CREATE OR REPLACE FUNCTION checkAppointments() RETURNS TRIGGER AS
-$check_app$
-    IF EXISTS 
-        (SELECT * FROM appuntamenti WHERE ora >= NEW.ora - '20 minutes'::interval OR ora <= NEW.ora + '20 minutes'::interval)
-    THEN
-        RAISE EXCEPTION "L'appuntamento non puo' essere inserito durante altri appuntamenti"; 
-    END IF;
-    RETURN NEW;
-$check_app$ LANGUAGE plpgsql;
+CREATE OR REPLACE FUNCTION checkTurniVol() RETURNS TRIGGER AS
+$check_turni_volontari$
+    DECLARE
+        volTurni turni;
+        cur CURSOR FOR
+            SELECT *
+            FROM turni
+            WHERE data = ANY (
+                SELECT data
+                FROM turni
+                WHERE id = NEW.turno
+            );
+    BEGIN
+        OPEN cur;
+        FETCH cur INTO volTurni;
 
-CREATE TRIGGER checkApts()
-BEFORE INSERT ON appuntamenti
-FOR EACH ROW EXECUTE FUNCTION checkAppointments();
+        WHILE FOUND LOOP
+            BEGIN
+                IF (NEW.ora_inizio, NEW.ora_fine) OVERLAPS (volTurni.ora_inizio, volTurni.ora_fine)
+                THEN
+                    RAISE NOTICE 'Errore: il turno da inserire si sovrappone al turno (%, %, %)', volTurni.data, volTurni.ora_inizio, volTurni.ora_fine;
+                    RETURN NULL;
+                END IF;
+               FETCH cur INTO volTurni;
+            END;
+        END LOOP;
+        CLOSE cur;
+    END;
+$check_turni_volontari$ LANGUAGE plpgsql;
+
+CREATE TRIGGER checkTurniVolontari
+BEFORE INSERT ON volontari_turni
+FOR EACH ROW EXECUTE FUNCTION checkTurniVol();
