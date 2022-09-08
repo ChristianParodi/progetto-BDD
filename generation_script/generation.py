@@ -302,7 +302,7 @@ with open("generation.sql", "w") as file:
 
     # ingresso_prodotti
     file.write('''
-    -- ingress_prodotti
+    -- ingresso_prodotti
     INSERT INTO ingresso_prodotti VALUES\n\t''')
     ingresso_prodotti = []
     dates = [fake.future_datetime() for _ in range(N)]
@@ -335,8 +335,8 @@ with open("generation.sql", "w") as file:
             scarico = random.choice(scarichi)
             prodotti.append(
                 (k, str(scad), str(real_scad), scorte[i][0],
-                 random.choice(ingresso_prodotti)[0], scarico[0], scarico[1]
-                 )
+                 random.choice(ingresso_prodotti)[0], scarico[0], scarico[1],
+                 'true' if scarico[0] <= date.today() else 'false')
             )
             k += 1
 

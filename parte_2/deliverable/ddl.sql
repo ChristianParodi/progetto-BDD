@@ -119,6 +119,7 @@ CREATE TABLE prodotti (
     ID_ingresso INT NOT NULL,
     data_scarico DATE,
     ora_scarico TIME,
+    scaricato BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (codice_prodotto) REFERENCES scorte(codice_prodotto)
                       ON DELETE CASCADE
                       ON UPDATE CASCADE,
