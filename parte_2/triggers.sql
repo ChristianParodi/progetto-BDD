@@ -38,10 +38,10 @@ $check_turni_volontari$
         cur CURSOR FOR
             SELECT *
             FROM turni
-            WHERE id = 1 and data = ANY (
+            WHERE id = NEW.turno and data = ANY (
                 SELECT data
                 FROM turni
-                WHERE id = 1
+                WHERE id = NEW.turno
             );
     BEGIN
         OPEN cur;
