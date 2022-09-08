@@ -106,3 +106,11 @@ CREATE VIEW info_nuclei_familiari AS
         JOIN fascia_eta_piu_bassa fepb on fepb.id_cliente = clienti.id
         JOIN n_spese_ultimo_anno ON n_spese_ultimo_anno.id_cliente = clienti.id
         ORDER BY clienti.id;
+    
+-- altre views
+
+-- prodotti scaricati
+CREATE VIEW prodotti_scaricati AS
+    SELECT *
+    FROM prodotti
+    WHERE data_scarico <= CURRENT_DATE AND ora_scarico <= CURRENT_TIME
