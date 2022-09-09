@@ -1,0 +1,1 @@
+-- Specificare il carico di lavoro identificato da 3 interrogazioni di cui una complessa e una che contenga almeno un join
