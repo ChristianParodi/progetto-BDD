@@ -137,8 +137,7 @@ CREATE TABLE associazioni (
 );
 
 CREATE TABLE servizi (
-    ID SERIAL PRIMARY KEY,
-    nome VARCHAR(255) NOT NULL UNIQUE
+    nome VARCHAR(255) NOT NULL PRIMARY KEY
 );
 
 CREATE TABLE turni (
@@ -280,12 +279,12 @@ CREATE TABLE volontari_turni (
 
 CREATE TABLE volontari_servizi (
     volontario INT,
-    servizio INT,
+    servizio VARCHAR(255),
     PRIMARY KEY(volontario, servizio),
     FOREIGN KEY (volontario) REFERENCES volontari(ID)
                                    ON DELETE CASCADE
                                    ON UPDATE CASCADE,
-    FOREIGN KEY (servizio) REFERENCES servizi(ID)
+    FOREIGN KEY (servizio) REFERENCES servizi(nome)
                                    ON DELETE CASCADE
                                    ON UPDATE CASCADE
 );
@@ -344,44 +343,44 @@ FOR EACH ROW EXECUTE FUNCTION subQta();
 -- Verifica del vincolo che ogni volontario non si assegnato a piu' attivita'
 -- contemporaneamente
 
-CREATE OR REPLACE FUNCTION checkTurniVol() RETURNS TRIGGER AS
-$check_turni_volontari$
-    DECLARE
-        volTurni turni;
-        newTurno turni;
-        -- Tutti i turni che sono nella stessa data del turno che si vuole inserire (escluso)
-        cur CURSOR FOR
-            SELECT *
-            FROM turni
-            WHERE data = (
-                SELECT data
-                FROM turni
-                WHERE id = NEW.turno
-            ) AND id <> NEW.turno;
-    BEGIN
-        OPEN cur;
-        FETCH cur INTO volTurni;
+-- CREATE OR REPLACE FUNCTION checkTurniVol() RETURNS TRIGGER AS
+-- $check_turni_volontari$
+--     DECLARE
+--         volTurni turni;
+--         newTurno turni;
+--         -- Tutti i turni che sono nella stessa data del turno che si vuole inserire (escluso)
+--         cur CURSOR FOR
+--             SELECT *
+--             FROM turni
+--             WHERE data = (
+--                 SELECT data
+--                 FROM turni
+--                 WHERE id = NEW.turno
+--             ) AND id <> NEW.turno;
+--     BEGIN
+--         OPEN cur;
+--         FETCH cur INTO volTurni;
 
-        -- Il turno che si vuole assegnare al volontario
-        SELECT *
-        FROM turni
-        WHERE id = NEW.turno
-        INTO newTurno;
+--         -- Il turno che si vuole assegnare al volontario
+--         SELECT *
+--         FROM turni
+--         WHERE id = NEW.turno
+--         INTO newTurno;
 
-        WHILE FOUND LOOP
-            BEGIN
-                IF (newTurno.ora_inizio, newTurno.ora_fine) OVERLAPS (volTurni.ora_inizio, volTurni.ora_fine)
-                THEN
-                    RAISE NOTICE 'Errore: il turno da inserire si sovrappone al turno (%, %, %)', volTurni.data, volTurni.ora_inizio, volTurni.ora_fine;
-                    RETURN NULL;
-                END IF;
-               FETCH cur INTO volTurni;
-            END;
-        END LOOP;
-        CLOSE cur;
-    END;
-$check_turni_volontari$ LANGUAGE plpgsql;
+--         WHILE FOUND LOOP
+--             BEGIN
+--                 IF (newTurno.ora_inizio, newTurno.ora_fine) OVERLAPS (volTurni.ora_inizio, volTurni.ora_fine)
+--                 THEN
+--                     RAISE NOTICE 'Errore: il turno da inserire si sovrappone al turno (%, %, %)', volTurni.data, volTurni.ora_inizio, volTurni.ora_fine;
+--                     RETURN NULL;
+--                 END IF;
+--                FETCH cur INTO volTurni;
+--             END;
+--         END LOOP;
+--         CLOSE cur;
+--     END;
+-- $check_turni_volontari$ LANGUAGE plpgsql;
 
-CREATE TRIGGER checkTurniVolontari
-BEFORE INSERT ON volontari_turni
-FOR EACH ROW EXECUTE FUNCTION checkTurniVol();
+-- CREATE TRIGGER checkTurniVolontari
+-- BEFORE INSERT ON volontari_turni
+-- FOR EACH ROW EXECUTE FUNCTION checkTurniVol();

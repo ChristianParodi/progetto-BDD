@@ -375,14 +375,14 @@ with open("generation.sql", "w") as file:
 
     for i in range(len(names) - 1):
         servizi.append(
-            (i + 1, names[i])
+            names[i]
         )
 
     for i in range(len(servizi)):
         if i != len(servizi) - 1:
-            file.write(str(servizi[i]) + ',\n\t')
+            file.write(f"({servizi[i]})" + ',\n\t')
         else:
-            file.write(str(servizi[i]) + ";\n\n")
+            file.write(f"({servizi[i]})" + ";\n\n")
     # turni
     file.write('''
     -- turni

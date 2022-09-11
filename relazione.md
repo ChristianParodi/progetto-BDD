@@ -126,8 +126,6 @@ memorizzando per quali servizi un dato volontario e' disponibile (e in quali gio
   - scadenza: `date`
   - scadenza_reale: `date`
     - data oltre il quale e' necessario effettuare lo scarico del prodotto
-  - scaricato: `bool`
-    - `true` se il prodotto e' gia' stato scaricato, altrimenti `false`
 
 - `Scarichi`
 
@@ -362,7 +360,7 @@ componente_nucleo, fascia_eta, cliente$^{clienti}$)
 
 **Appuntamenti**(\underline{ID}, data, ora, componente_nucleo, saldo_iniziale, saldo_finale, cliente$^{clienti}$, volontario$^{volontari}$, familiare$^{familiari}_O$)
 
-**Prodotti**(\underline{ID}, scadenza$_o$, scadenza_reale$_o$, codice_prodotto$^{scorte}$, ID_ingresso$^{ingresso\_prodotti}$, data_scarico$^{scarichi}_o$, ora_scarico$^{scarichi}_o$ scaricato)
+**Prodotti**(\underline{ID}, scadenza$_o$, scadenza_reale$_o$, codice_prodotto$^{scorte}$, ID_ingresso$^{ingresso\_prodotti}$, data_scarico$^{scarichi}_o$, ora_scarico$^{scarichi}_o$)
 
 **Scorte**(\underline{codice\_prodotto}, tipologia, marca, prezzo, quantita')
 
@@ -376,7 +374,7 @@ componente_nucleo, fascia_eta, cliente$^{clienti}$)
 
 **Associazioni**(\underline{nome})
 
-**Servizi**(\underline{nome})
+**Servizi**(\underline{ID}, nome)
 
 **Turni**(\underline{ID}, data, ora_inizio, ora_fine, servizio$^{servizi}$)
 
@@ -414,14 +412,13 @@ Per verificare la qualita' dello schema ER ristrutturato e' bene controllare che
   - $CF \to nome, cognome, data\_nascita$
 - Clienti
   - $ID \to nome, cognome, data\_nascita, ente\_autorizzatore$,
-
-    $data\_autorizzazione, punti\_mensili, saldo\_punti, CF, autorizzato, n\_componenti\_nucleo$
+  $data\_autorizzazione, punti\_mensili, saldo\_punti, CF, autorizzato, n\_componenti\_nucleo$
   - $CF \to nome, cognome, data\_nascita$
 - Appuntamenti
   - $ID \to data, ora, componente\_nucleo, saldo\_iniziale, saldo\_finale$
   - $data, ora \to ID, componente\_nucleo, saldo\_iniziale, saldo\_finale$
 - Prodotti
-  - $ID \to nome, prezzo, scadenza, scadenza\_reale, scaricato$
+  - $ID \to nome, prezzo, scadenza, scadenza\_reale$
 - Scorte
   - $codice\_prodotto \to tipologia, quantita'$
   - $tipologia, marca \to prezzo$
@@ -436,7 +433,9 @@ Per verificare la qualita' dello schema ER ristrutturato e' bene controllare che
   - $telefono \to ID$
   - $email \to ID$
 - Fasce orarie
-  - $ID -> giorno, ora\_inizio, ora\_fine$
+  - $ID \to giorno, ora_inizio, ora_fine$
+- Servizi
+  - $ID \to nome, veicolo$
 - Turni
   - $ID \to data, ora\_inizio, ora\_fine$
 - Turno_trasporti
