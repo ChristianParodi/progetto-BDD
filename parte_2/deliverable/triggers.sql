@@ -66,6 +66,6 @@ $check_turni_volontari$
     END;
 $check_turni_volontari$ LANGUAGE plpgsql;
 
-CREATE TRIGGER checkTurniVolontari
+CREATE TRIGGER check_turni_volontari
 BEFORE INSERT ON volontari_turni
 FOR EACH ROW EXECUTE FUNCTION checkTurniVol();
