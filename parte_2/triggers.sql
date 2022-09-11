@@ -54,7 +54,7 @@ $check_turni_volontari$
 
         WHILE FOUND LOOP
             BEGIN
-                IF (currentTurno.ora_inizio, currentTurno.ora_fine) OVERLAPS (volTurni.ora_inizio, volTurni.ora_fine)
+                IF (newTurno.ora_inizio, newTurno.ora_fine) OVERLAPS (volTurni.ora_inizio, volTurni.ora_fine)
                 THEN
                     RAISE NOTICE 'Errore: il turno da inserire si sovrappone al turno (%, %, %)', volTurni.data, volTurni.ora_inizio, volTurni.ora_fine;
                     RETURN NULL;

@@ -138,7 +138,7 @@ CREATE TABLE associazioni (
 
 CREATE TABLE servizi (
     ID SERIAL PRIMARY KEY,
-    nome VARCHAR(255) NOT NULL
+    nome VARCHAR(255) NOT NULL UNIQUE
 );
 
 CREATE TABLE turni (
@@ -146,7 +146,9 @@ CREATE TABLE turni (
     data DATE NOT NULL,
     ora_inizio TIME NOT NULL,
     ora_fine TIME NOT NULL,
-    UNIQUE(data, ora_inizio, ora_fine)
+    servizio VARCHAR(255) NOT NULL,
+    UNIQUE(data, ora_inizio, ora_fine),
+    FOREIGN KEY (servizio) REFERENCES servizi(nome)
 );
 
 CREATE TABLE turni_trasporti (
@@ -346,21 +348,29 @@ CREATE OR REPLACE FUNCTION checkTurniVol() RETURNS TRIGGER AS
 $check_turni_volontari$
     DECLARE
         volTurni turni;
+        newTurno turni;
+        -- Tutti i turni che sono nella stessa data del turno che si vuole inserire (escluso)
         cur CURSOR FOR
             SELECT *
             FROM turni
-            WHERE data = ANY (
+            WHERE data = (
                 SELECT data
                 FROM turni
                 WHERE id = NEW.turno
-            );
+            ) AND id <> NEW.turno;
     BEGIN
         OPEN cur;
         FETCH cur INTO volTurni;
 
+        -- Il turno che si vuole assegnare al volontario
+        SELECT *
+        FROM turni
+        WHERE id = NEW.turno
+        INTO newTurno;
+
         WHILE FOUND LOOP
             BEGIN
-                IF (NEW.ora_inizio, NEW.ora_fine) OVERLAPS (volTurni.ora_inizio, volTurni.ora_fine)
+                IF (newTurno.ora_inizio, newTurno.ora_fine) OVERLAPS (volTurni.ora_inizio, volTurni.ora_fine)
                 THEN
                     RAISE NOTICE 'Errore: il turno da inserire si sovrappone al turno (%, %, %)', volTurni.data, volTurni.ora_inizio, volTurni.ora_fine;
                     RETURN NULL;

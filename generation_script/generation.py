@@ -395,7 +395,7 @@ with open("generation.sql", "w") as file:
 
         turni.append(
             (i + 1, str(fake.future_date()),
-             str(ora_inizio), str(ora_fine).split()[1])
+             str(ora_inizio), str(ora_fine).split()[1], random.choice(servizi)[1])
         )
 
     for i in range(len(turni)):
