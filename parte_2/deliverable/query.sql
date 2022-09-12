@@ -22,20 +22,21 @@ WHERE id NOT IN (
 
 SELECT tipologia
 FROM (
-SELECT R.tipologia, COUNT(R.tipologia)
-FROM (
-    SELECT c.id as id_famiglia, s.tipologia
-    FROM scorte s
-    NATURAL JOIN prodotti p
-    JOIN appuntamenti_prodotti ap on p.id = ap.prodotto
-    JOIN appuntamenti a on ap.appuntamento = a.id
-    JOIN clienti c on a.cliente = c.id
-    WHERE a.data >= CURRENT_DATE - '1 year'::interval) AS R
-GROUP BY R.tipologia
-HAVING COUNT(DISTINCT R.id_famiglia) = (SELECT COUNT(DISTINCT cliente)
-                               FROM clienti
-                               JOIN appuntamenti a2 on clienti.id = a2.cliente
-                               WHERE a2.data >= CURRENT_DATE - '1 year'::interval)) AS res;
+    SELECT R.tipologia, COUNT(R.tipologia)
+    FROM (
+        SELECT c.id as id_famiglia, s.tipologia
+        FROM scorte s
+        NATURAL JOIN prodotti p
+        JOIN appuntamenti_prodotti ap on p.id = ap.prodotto
+        JOIN appuntamenti a on ap.appuntamento = a.id
+        JOIN clienti c on a.cliente = c.id
+        WHERE a.data >= CURRENT_DATE - '1 year'::interval) AS R
+    GROUP BY R.tipologia
+    HAVING COUNT(DISTINCT R.id_famiglia) = (SELECT COUNT(DISTINCT cliente)
+                                FROM clienti
+                                JOIN appuntamenti a2 on clienti.id = a2.cliente
+                                WHERE a2.data >= CURRENT_DATE - '1 year'::interval)
+    ) AS res;
 
 -- determinare i prodotti che vengono scaricati (cioè non riescono ad essere distribuiti alle famiglie)
 -- in quantitativo maggiore rispetto al quantitativo medio scaricato per prodotti della loro tipologia

@@ -1,12 +1,10 @@
 -- Specificare il carico di lavoro identificato da 3 interrogazioni di cui una complessa e una che contenga almeno un join
 
--- Selezione di tutti i volontari che lavorano in data 2022-10-01, la data e l'ora del turno e il servizio che svolgono
+-- Selezione di tutti i prodotti da scaricare entro un anno da oggi
 
-SELECT v.id AS id_volontario, v.nome, v.cognome, t.data, t.ora_inizio, t.ora_fine, t.servizio
-FROM volontari v
-JOIN volontari_turni vt ON vt.volontario = v.id
-JOIN turni t ON vt.turno = t.id
-WHERE t.data = '2022-10-01';
+SELECT *
+FROM prodotti
+WHERE data_scarico BETWEEN CURRENT_DATE AND CURRENT_DATE + '1 year'::interval;
 
 -- dato il turno con id = 1, selezionare tutti i turni presenti nella stessa data (eccetto il turno stesso)
 
@@ -18,9 +16,12 @@ WHERE t.data = (
     WHERE id = 1
 ) AND id <> 1;
 
--- selezionare tutti i prodotti scaricati tra il 2022-08-01 e il 2022-10-01
+-- Quanti colli il volontario trasportera' nei prossimi 2 mesi
 
-SELECT p.id AS id_prodotto, s.tipologia, s.marca, p.data_scarico
-FROM prodotti p NATURAL JOIN scorte s
-WHERE p.scaricato AND p.data_scarico BETWEEN '2022-08-01' AND '2022-10-01';
+SELECT v.id, SUM(n_colli) as n_colli_trasportati
+FROM volontari v
+JOIN turni_trasporti tt on v.id = tt.volontario
+JOIN turni t ON tt.id = t.id
+WHERE t.data <= CURRENT_DATE + '2 months'::interval
+GROUP BY v.id
 
