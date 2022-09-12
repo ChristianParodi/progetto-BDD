@@ -2,7 +2,7 @@
 
 -- Selezione di tutti i volontari che lavorano in data 2022-10-01, la data e l'ora del turno e il servizio che svolgono
 
-SELECT v.id AS id_volontario, v.nome, v.cognome, t.data, t.ora_inizio, t.ora_fine
+SELECT v.id AS id_volontario, v.nome, v.cognome, t.data, t.ora_inizio, t.ora_fine, t.servizio
 FROM volontari v
 JOIN volontari_turni vt ON vt.volontario = v.id
 JOIN turni t ON vt.turno = t.id

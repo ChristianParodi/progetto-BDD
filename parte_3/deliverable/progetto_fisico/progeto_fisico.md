@@ -65,3 +65,23 @@ Execution Time: 4.160 ms
 
 -- f_selettivita: 1/6568
 ```
+
+\newpage 
+
+```bash
+// numero di pagine occupate
++------------+--------+
+|tabella     |n_pagine|
++------------+--------+
+|clienti     |215     |
+|familiari   |942     |
+|telefoni    |192     |
+|email       |288     |
+|fasce_orarie|0       |
+|appuntamenti|146     |
+|volontari   |210     |
+|scarichi    |96      |
+|scorte      |0       |
+|prodotti    |59      |
++------------+--------+
+```

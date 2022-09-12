@@ -13,13 +13,16 @@ WHERE id NOT IN (
 -- determinare le tipologie di prodotti acquistate nell’ultimo anno da tutte le famiglie (cioè ogni fa-
 -- miglia ha acquistato almeno un prodotto di tale tipologia nell’ultimo anno);
 
-select s.tipologia
-from appuntamenti a
-join appuntamenti_prodotti ap on a.id = ap.appuntamento
-join prodotti p on ap.prodotto = p.id
-join scorte s on p.codice_prodotto = s.codice_prodotto
-where a.data >= CURRENT_DATE - '1 year'::interval
-group by s.tipologia;
+SELECT R.tipologia, COUNT(R.tipologia)
+FROM (SELECT c.id as id_famiglia, s.tipologia
+    FROM scorte s
+    NATURAL JOIN prodotti p
+    JOIN appuntamenti_prodotti ap on p.id = ap.prodotto
+    JOIN appuntamenti a on ap.appuntamento = a.id
+    JOIN clienti c on a.cliente = c.id
+    WHERE a.data >= CURRENT_DATE - '1 year'::interval) AS R
+GROUP BY R.tipologia
+HAVING COUNT(R.id_famiglia) = (SELECT COUNT(*) FROM clienti)
 
 -- determinare i prodotti che vengono scaricati (cioè non riescono ad essere distribuiti alle famiglie)
 -- in quantitativo maggiore rispetto al quantitativo medio scaricato per prodotti della loro tipologia

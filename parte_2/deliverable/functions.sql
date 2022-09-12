@@ -6,7 +6,7 @@ $scarico$
         cur CURSOR FOR
             SELECT id
             FROM prodotti
-            WHERE data_scarico <= CURRENT_DATE AND ora_scarico <= CURRENT_TIME;
+            WHERE data_scarico <= CURRENT_DATE;
     BEGIN
         OPEN cur;
         FETCH cur INTO prodId;
