@@ -19,7 +19,7 @@ with open("codice_fiscale/codici_fiscali.txt", "r") as cf_file:
     for line in cf_file:
         cf.append(line[:-1])  # togliendo lo \n
 
-N = 10_000
+N = 15_000
 '''
     L'idea dietro questo script e' di creare un file SQL in cui, per ogni
     tabella, ci sara' la corrispettiva INSERT con i vari dati fake
