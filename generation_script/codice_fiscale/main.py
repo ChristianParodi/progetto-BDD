@@ -73,7 +73,7 @@ def gen_email(n=1, unique=True):
 
 if __name__ == "__main__":
     # creo una lista con 800 codici fiscali
-    cf = [gen_fiscal_code() for _ in range(800)]
+    cf = [gen_fiscal_code() for _ in range(10_000)]
 
     with open("codici_fiscali.txt", "w") as file:
         for i in cf:

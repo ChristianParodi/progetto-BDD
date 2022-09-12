@@ -1,12 +1,9 @@
 from datetime import date
-from nis import match
 from faker import Faker
 from faker.providers import person, date_time, lorem, company
 import random
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
-
-# MANCA LA FASCIA D'ETA'
 
 from codice_fiscale.main import gen_fiscal_code, gen_p_iva, gen_phone_number, gen_email
 
@@ -22,7 +19,7 @@ with open("codice_fiscale/codici_fiscali.txt", "r") as cf_file:
     for line in cf_file:
         cf.append(line[:-1])  # togliendo lo \n
 
-N = 800
+N = 10_000
 '''
     L'idea dietro questo script e' di creare un file SQL in cui, per ogni
     tabella, ci sara' la corrispettiva INSERT con i vari dati fake
@@ -141,6 +138,10 @@ with open("generation.sql", "w") as file:
     for i in range(N):
         current = gen_email()
         email.append((current, clienti[i][0]))
+
+    for i in range(N):
+        while email.count(email[i]) > 1:
+            email[i] = gen_email()
 
     # aggiungiamo qualche mail a caso
     for _ in range(N):
@@ -380,29 +381,56 @@ with open("generation.sql", "w") as file:
 
     for i in range(len(servizi)):
         if i != len(servizi) - 1:
-            file.write(f"({servizi[i]})" + ',\n\t')
+            file.write(f"('{servizi[i]}')" + ',\n\t')
         else:
-            file.write(f"({servizi[i]})" + ";\n\n")
+            file.write(f"('{servizi[i]}')" + ";\n\n")
     # turni
     file.write('''
     -- turni
     INSERT INTO turni VALUES\n\t''')
     turni = []
+    date = []
+    ore = []
+
+    for i in range(N // 2):
+        date.append(fake.future_date())
+
     for i in range(N):
-        ora_inizio = fake.time()
-        ora_fine = datetime.strptime(
-            ora_inizio, '%H:%M:%S') + relativedelta(hours=5)
+        ore.append(fake.time())
+
+    for i in range(len(date)):
+        if date.count(date[i]) > 1:
+            date[i] = fake.future_date()
+
+    for i in range(len(ore)):
+        if ore.count(ore[i]) > 1:
+            ore[i] = fake.time()
+
+    for i in range(N // 2):
 
         turni.append(
-            (i + 1, str(fake.future_date()),
-             str(ora_inizio), str(ora_fine).split()[1], random.choice(servizi)[1])
+            (i + 1, str(random.choice(date)),
+             str(random.choice(ore)), str(random.choice(ore)), random.choice(servizi))
         )
+
+    no_dup_turni = [(i[1], i[2], i[3], i[4]) for i in turni]
+
+    for i in range(len(no_dup_turni)):
+        while no_dup_turni.count(no_dup_turni[i]) > 1:
+            no_dup_turni[i] = (str(random.choice(date)),
+                               str(random.choice(ore)), str(random.choice(ore)), random.choice(servizi))
+
+    turni = []
+    for i in range(len(no_dup_turni)):
+        turni.append((i + 1, no_dup_turni[i][0],
+                     no_dup_turni[i][1], no_dup_turni[i][2], no_dup_turni[i][3]))
 
     for i in range(len(turni)):
         if i != len(turni) - 1:
             file.write(str(turni[i]) + ',\n\t')
         else:
             file.write(str(turni[i]) + ";\n\n")
+
     # turno_trasporti
     file.write('''
     -- turni_trasporti
@@ -410,7 +438,7 @@ with open("generation.sql", "w") as file:
     turni_trasporti = []
     id_turni = [i[0] for i in turni]
 
-    for i in range(N):
+    for i in range(len(turni)):
         while id_turni.count(id_turni[i]) > 1:
             id_turni[i] = random.choice(turni_trasporti)[0]
 
@@ -420,7 +448,7 @@ with open("generation.sql", "w") as file:
         "Camion",
     ]
 
-    for i in range(N):
+    for i in range(len(turni)):
         ora = fake.time()
 
         turni_trasporti.append(
@@ -560,12 +588,12 @@ with open("generation.sql", "w") as file:
     INSERT INTO appuntamenti_prodotti VALUES\n\t''')
     appuntamenti_prodotti = []
     id_prodotto = [prodotti[i][0] for i in range(len(prodotti)//2)]
-    for i in range(N):
+    for i in range(len(id_prodotto)):
         appuntamenti_prodotti.append(
             (id_prodotto[i], random.choice(appuntamenti)[0])
         )
 
-    for i in range(N):
+    for i in range(len(id_prodotto)):
         while appuntamenti_prodotti.count(appuntamenti_prodotti[i]) > 1:
             appuntamenti_prodotti[i] = (random.choice(
                 prodotti)[0], random.choice(appuntamenti)[0])
@@ -623,13 +651,13 @@ with open("generation.sql", "w") as file:
     volontari_servizi = []
     for i in range(N):
         volontari_servizi.append(
-            (random.choice(volontari)[0], random.choice(servizi)[0])
+            (random.choice(volontari)[0], random.choice(servizi))
         )
 
     for i in range(N):
         while volontari_servizi.count(volontari_servizi[i]) > 1:
             volontari_servizi[i] = (random.choice(
-                volontari)[0], random.choice(servizi)[0])
+                volontari)[0], random.choice(servizi))
 
     for i in range(len(volontari_servizi)):
         if i != len(volontari_servizi) - 1:
@@ -660,5 +688,6 @@ with open("generation.sql", "w") as file:
             file.write(str(volontari_fasce_orarie[i]) + ";\n\n")
 
     file.write("END;\n")
+
 if __name__ == "__main__":
     pass
