@@ -3,7 +3,6 @@ geometry: "left=1cm,right=2cm,top=1cm,bottom=2cm"
 output: pdf_document
 ---
 
-
 # `Transazione considerata`
 
 ```sql
